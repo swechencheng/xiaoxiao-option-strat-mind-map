@@ -21,6 +21,7 @@
 - **Theta is never free lunch**: Theta and Gamma maintain an unavoidable trade-off: positive theta invariably produces negative gamma (an inverted bowl payoff curve where large moves in either direction inflict losses).
 - **The true essence of market neutrality (Delta 0)**: Willing to short when price rallies, and willing to buy when price drops. When the market sells off, embrace the long exposure handed to you rather than panic-selling at market troughs.
 - **Avoid frequent, drastic Delta overhauls**: Aggressively shifting portfolio delta amounts to market timing (trying to pick tops and bottoms), resulting in long-term negative expectancy.
+- **Delta-0 Practical Tolerance & Strike Fine-Tuning (Cases 90, 198)**: Entering Delta 0 is never strict mathematical 0.000. In live trading, having the first two decimal places as "0.0" (|net_Delta| < 0.10, ideally <= 0.06) is fully compliant. If live market Greeks result in |net_Delta| > 0.06, Xiaoxiao's practice is to shift the outermost wing strike (the most OTM put or wing) by one increment to compress net delta back into [-0.06, +0.06], preventing directional bias from compounding.
 
 ### (3) Core Prohibitions (Exhaustive compilation from all cases)
 1. **Never sell naked single-leg options (puts or calls)** (the textbook definition of uncapped risk).
@@ -49,13 +50,14 @@
 
 ### (1) Two Core Volatility Metrics
 - **sd (Standard Deviation, Single-Day Expected Move)**: Priced via the **ATM straddle quote** for a given expiration (ATM Call price + ATM Put price); sd maps 1-to-1 with implied volatility ($\sigma$ dictates the normal distribution width mathematically). Longer DTE increases sd. It is NOT Bollinger Bands (which are lagging technical indicators, not market-clearing quotes).
+  - **Today's 1sd Expected Move Range (Cases 1, 2, 24)**: 1sd = ATM Call mid + ATM Put mid (nearest expiration, e.g., 0DTE/1DTE); today's theoretical 1sd band is [Spot - 1sd, Spot + 1sd], serving as the intraday benchmark for whether markets are staging an extreme breach.
 - **VXN**: 30-day Nasdaq-100 Implied Volatility Index; reflects broader month-long volatility but does not fully represent single-day pricing (single-day expected moves require checking the 0DTE/1DTE ATM straddle).
 - **IVR (IV Rank)**: When IVR < 20, buying 1–3 month long-dated calls "may be marginally favorable" (a rare, acceptable timing metric).
 - **Key Terminology**: 1 sd move = value of the ATM straddle for that expiry; "a 3sd / 7sd decline" = an intraday drop equaling 3x or 7x the expected single-day straddle move.
 
 ### (2) Market Regimes & Optimal Strategy Matrix
 1. **Severe Crash / Panic + High VXN (Market prices risk properly)**
-   - Top choice: **Bearish Broken Wing Butterfly (BWB)** (0DTE or 1–3 weeks), net Delta 0.
+   - Top choice: **Bearish Broken Wing Butterfly (BWB) (Strictly 0DTE, or 1DTE if entering in the afternoon)**, net Delta 0. Xiaoxiao's core principle: BWB requires 0DTE to monetize rapid single-day theta decay differentials; 14-day horizons cancel out decay across wings and forfeit statistical edge.
    - May maintain a mild short delta bias via defined spreads (never via short underlying shares/futures).
 2. **Elevated VXN / High Sustained Volatility (Following multi-day sell-offs)**
    - Extend expiration to **1–3 weeks** (under high IV, locking in longer-dated extrinsic value reduces tail exposure).
@@ -72,7 +74,7 @@
 6. **Post-Parabolic Rally (Overbought conditions, short squeezes)**
    - Maintain a **bearish bias**; enter **Bearish Broken Wing Butterflies** or **Negative-Delta Iron Condors**.
 7. **Expiration Week / Quadruple Witching / Quarterly Futures Roll**
-   - Note that anticipated volatility is already priced into the ATM straddle; execute only defined-risk setups.
+   - Note that anticipated volatility is fully priced into the ATM straddle; Iron Condors must leapfrog the current week to avoid brutal negative gamma on <= 3 DTE short calls, **opening for next week's Friday (1–2 weeks DTE)**.
 8. **Pre-Earnings / Earnings Announcement Days**
    - Treat as a 50/50 binary gamble; avoid predicting directional outcomes.
 9. **Whipsaw / Choppy Regime (Frequent 3sd to 7sd outlier moves violating standard models)**
@@ -92,7 +94,7 @@
   - Buy 1 **Delta 0.1 Put** (or 0.05, deepest OTM, forming the "broken wing" that caps downside risk)
 - **Standard Benchmark Configuration**: **0.50 / 0.40 / 0.15 / 0.05** (preferred by Xiaoxiao for consistency and stability).
 - **Acceptable Alternatives**: 0.5/0.3/0.3/0.1, or 0.5/0.35/0.2/0.05—**the sole requirement is that total net delta equals 0**.
-- **Expiration Selection**: 0DTE or 1–3 weeks. **Only 0DTE generates substantial immediate profitability** (magnifying the time decay divergence across the 4 strikes); in longer-dated BWBs, the 4 legs offset each other, leaving Delta-0 net value largely static (e.g., a 45-day structure gained only $1 after 14 days).
+- **Hard Expiration Constraint**: **Strictly 0DTE (morning entry) or 1DTE (afternoon/close entry)**. Xiaoxiao repeatedly emphasized: **Only 0DTE/1DTE yields significant profitability** (amplifying time decay differentials across strikes); multi-week horizons (e.g. 14 days) cause the 4 legs to neutralize each other's decay, earning virtually nothing while unnecessarily bearing prolonged market exposure.
 - **Profit Mechanism**: A Theta-decay engine with neutral Vega balance (2 long vs. 2 short insulate against IV shifts). Profit peaks when the underlying declines towards the short strike, exploiting the decay gap between strikes.
 - **Empirical 0DTE P&L Case Study (Entry Debit: ~$0.92 pts)**:
   - Underlying drops 9 pts to the short strikes after 24 hours: Structure value expands to 5.49 pts (~6x gain).
@@ -108,6 +110,7 @@
   - Sell 1 Call Spread (Short delta 0.50, Long delta 0.40) to short the upside
   - Sell 1 Put Spread (Short delta 0.15, Long delta 0.05) to monetize the downside
 - **Core Concept**: Net seller strategy capturing time decay with capped risk, suited for volatile markets.
+- **Hard Expiration Constraint**: **Must be 1–3 weeks (7–14 days, strictly >= 7 days)**. Because the Iron Condor includes an ATM short call, it is strictly forbidden from entering the <= 3 DTE expiry zone (where exploding negative gamma triggers whipsaws and forces cash settlement); positions during expiry week must open directly into next week's Friday.
 - **Strike Selection**: On equity indices, prioritize **selling Call Spreads containing ATM calls** (controlling upside risk) + **selling Put Spreads in OTM puts (0.10–0.30 delta)** (exploiting put skew).
 - **Directional Variants by Net Delta**:
   - **Neutral Iron Condor**: Call 0.5/0.3 + Put 0.3/0.1.
@@ -249,7 +252,10 @@
 - Spot breaches the first short strike by **>100 points** $\rightarrow$ evaluate defense; breaches by **>300 points** $\rightarrow$ execute roll immediately.
 - Upper **Short Call delta drops to 0.40 $\rightarrow$ prepare roll; drops to 0.30 $\rightarrow$ mandatory roll** (standard baseline: 0.35 delta).
 - Lower **Short Put reaches 0.65 delta / Long Put reaches 0.35 delta / Long Call reaches 0.65 delta** $\rightarrow$ execute rebalancing.
-- **3 Days Prior to Expiration**: Mandatory portfolio review regardless of strike location (assess whether to roll or hold to settlement).
+- **Pre-Expiry 3-Day Action Split (Cases 344, 347, 348, 253)**:
+  - **Structures with Short Calls (Iron Condors, Call Spreads)**: **Mandatory Roll (Must-severity)**; close the call spread and roll out 1 week to escape devastating negative gamma, strictly avoiding being dragged into Friday 9:30 AM cash settlement ("horse race");
+  - **Pure Put Credit Spreads (Deep OTM Put Spreads, BWBs)**: **Hold to Expiry (Watch-severity, hold_to_expiry)**; allow the put spread to capture 100% credit and expire worthless, carrying zero negative gamma risk.
+- **Adjustment Cooldown Lock (Preventing Churn)**: Maintain a mandatory 30-minute cooldown window between adjustments to prevent whipsaw over-trading on intraday false breakouts, eliminating triple fee drag from commissions, bid-ask slippage, and adverse fills.
 
 ### (3) Downside Defense: Rolling Upper Bearish Spreads
 - **Action**: Close the legacy upper spread $\rightarrow$ sell an **ATM Call Spread for the following week (Sell ATM Call, Buy OTM Call)**, configuring the new 4-leg structure to **Delta 0**.
@@ -259,12 +265,18 @@
 - **Why rolling down is beneficial**: Index put skew makes selling deep OTM calls negative EV; roll OTM calls down to ATM promptly to monetize extrinsic decay.
 
 ### (4) Severe Downside Defense: Rescuing Breached Short Put Spreads (The 6-Leg Roll)
-- **Deploy a Classic Butterfly to Roll Downward (6-Leg Procedure)**:
-  1. Buy back the existing, breached short put.
-  2. Sell 2 lower-strike puts (targeting delta 0.25–0.30).
-  3. Buy 1 lowest-strike put.
-  - *Result*: Establishes a same-expiry **Classic Symmetric Butterfly**, sized to 1 sd in width (~200 points wide).
-- **A classic butterfly introduces net negative delta** $\rightarrow$ balance by **selling a deep OTM put credit spread expiring the following week**, restoring the total 6-leg structure to **Net Delta 0**.
+- **Defensive Procedure Differentiated by Structure (Cases 45, 2, 143, 204, 249)**:
+  - **Standard Iron Condor / Bull Put Spread Downside Breach**: Execute **Classic Butterfly Downward Roll (6-Leg Procedure)**:
+    1. Buy back the breached short put (strike $K_{upper}$).
+    2. Sell 2 lower-strike puts (delta ~0.25–0.30, strike $K_{body}$).
+    3. Buy 1 lowest-strike put (strike $K_{wing}$).
+    - **Strict Geometric Equal-Width Wings**: The rescue butterfly and repurchased short put must form a **strictly symmetric equal-width butterfly** ($K_{upper} - K_{body} == K_{body} - K_{wing} \implies K_{wing} = 2 K_{body} - K_{upper}$, typically 1 sd / ~200 pts wide), ensuring Vega and Gamma neutralize to zero.
+    - Balance the resulting negative delta by **selling a deep OTM put credit spread expiring next week** $\rightarrow$ net 6 legs, Net Delta 0.
+  - **Broken Wing Butterfly (BWB) Downside Breach (Cases 45, 2)**:
+    - The BWB is a debit structure with **predefined, strictly capped maximum loss (the difference between wing widths)**.
+    - Xiaoxiao's explicit rule: *"A 7sd crash simply hits max loss; there is no effective adjustment... because loss is capped, avoiding multiple-times loss is already a win."*
+    - **Strictly prohibit breaking up a BWB to execute a 6-leg butterfly rescue** (unbalances leg ratios and compounds losses in steamroller crashes).
+    - Discipline requires **accepting the capped loss**, holding to expiration or closing the entire unit as a whole.
 - **Advantages of the Classic Butterfly Defense**:
   1. Identical expiration eliminates "extra day" timing risk.
   2. Equal buy/sell contracts neutralize Vega and Gamma exposure.
@@ -289,10 +301,11 @@
 
 ### (6) Dip-Buying with Positive Delta (Post-Crash Strategy)
 - After severe sell-offs, elevated IV combined with put skew makes selling deep OTM put spreads statistically positive EV, aligning with a broader bearish thesis.
-- **Method A**: Adjust the upper roll structure to target a slight positive net delta (+0.04 to +0.05) instead of pure zero.
-- **Method B**: Directly sell a standalone deep OTM put credit spread (delta 0.04–0.05, 2–5 days DTE).
-- **Position Sizing**: Allocate +0.04 to +0.05 delta per tranche (+0.07 to +0.10 for aggressive dip-buying).
-- **Add tranches every 100–200 point decline across staggered expirations**; if net positive delta becomes excessive, halt new put sales and roll upper call spreads at Delta 0.
+- **Dip-Buying Method Selection (Crucial Principle Clarification, Cases 109, 249, 250, 253)**:
+  - **Method A (Strictly Rejected)**: Tilting the upper roll structure to positive delta. Xiaoxiao firmly opposes adding directional bias to rescue combos; 6-leg complex orders have poor liquidity and execution friction.
+  - **Method B (Strictly Endorsed)**: Keep rescue combos at strict Delta 0; dip-buying must be executed via **separate standalone deep OTM put credit spreads (2–5 days DTE, net delta +0.04 to +0.05 per tranche)**.
+- **Position Sizing**: Allocate +0.04 to +0.05 delta per tranche (+0.07 to +0.10 for aggressive dip-buying), **capping total portfolio net delta strictly under <= 0.2 to 0.3**.
+- **Add tranches every 100–200 point decline across staggered expirations** (diversifying single-day tail risk); if portfolio delta approaches upper limits, halt new put sales and roll upper spreads at pure Delta 0.
 
 ### (7) Delta Portfolio Management
 - **Avoid non-zero delta adjustments under normal conditions**; accept natural delta fluctuations driven by price action (just as long call holders accept fluctuating delta).

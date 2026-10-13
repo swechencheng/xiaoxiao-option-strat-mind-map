@@ -18,7 +18,7 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 ## 0. Trading Philosophy & Core Prohibitions
 ### 3 Core Rules
 - Trade strictly defined-risk strategies (BWB / Iron Condor); abhor uncapped risk (naked single legs, wide strangles, put ratios)
-- Trade strictly Delta-0 (neutral); never gamble on direction (no top/bottom guessing); extract edge from Theta & Greeks
+- Trade strictly Delta-0 (neutral; tolerance |net_Delta| <= 0.06 per unit, fine-tune outer wing strike if needed); never gamble on direction (no top/bottom guessing); extract edge from Theta & Greeks
 - Focus on making fewer mistakes rather than pursuing theoretical maximums; evaluate forward expectancy (+EV), ignore sunk costs
 ### Core Principles
 - Structurally bearish on Nasdaq (-20%, targeting QQQ down to 600)
@@ -50,12 +50,12 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 - Avoid attempting to time tops or bottoms via technical indicators
 ## 1. Market Regimes & Strategy Calibration
 ### Core Metrics
-- sd (single-day expected move): ATM straddle price (ATM call + put), maps 1:1 with IV, widens with DTE
+- sd (single-day expected move): ATM straddle price (ATM call + put, 1sd = [S - Straddle_ATM, S + Straddle_ATM], approx IV * S * sqrt(1/252)), maps 1:1 with IV, widens with DTE
 - VXN: 30-day Nasdaq IV (does not fully reflect single-day move; check daily straddle sd)
 - IVR: <20 buying 1-3 month calls is marginally viable
 - Standard deviation vocabulary: 3sd / 7sd moves
 ### Regime-to-Strategy Mapping
-- Severe crash / panic + High VXN: Bearish BWB (0DTE or 1-3 weeks) Delta 0; mild short delta bias
+- Severe crash / panic + High VXN: Bearish BWB (strictly 0DTE/1DTE only, multi-week holding prohibited) Delta 0; mild short delta bias
 - High VXN / sustained volatility: extend DTE to 1-3 weeks; Negative-Delta Iron Condor (Call 0.5/0.2 + Put 0.12/0.05, net -0.2)
 - Low VXN / suppressed volatility: highest latent risk (buyers face low odds, sellers face steamroller); BWBs dangerous as short put sits too close; sit out and wait
 - Range-bound / consolidation: Neutral Iron Condor (Delta 0, time decay engine)
@@ -69,7 +69,7 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 ### Bearish Broken Wing Butterfly (BWB - Signature Setup)
 - Structure: Buy 1 ATM Put (0.50 delta) + Sell 2 OTM Puts (0.30 or 0.40 delta) + Buy 1 Deep OTM Put (0.10 or 0.05 delta)
 - Standard benchmark: 0.50 / 0.40 / 0.15 / 0.05 (stability); alternative: 0.5/0.3/0.3/0.1; total net Delta = 0
-- Expirations: 0DTE or 1-3 weeks; only 0DTE offers rapid profitability (decay gap magnified across strikes)
+- Expirations: strictly 0DTE (intraday) or 1DTE (overnight); multi-week holding strictly prohibited due to sluggish non-0DTE decay gaps and prolonged tail risk exposure
 - Net Delta 0, debit entry, positive theta, neutral vega balance
 - 0DTE P&L profile (0.92 debit): -9 pt drop -> expands to 5.49 (~6x); flat -> expands to 1.99 (~2x via theta); +5 pt rally -> drops to 0.48 (-50%)
 - Max loss = wing width difference (upper 9 vs lower 15 = 6 pt gap; QQQ $600 / NQ $4,800)
@@ -78,6 +78,7 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 ### Iron Condor (IC)
 - Structure: Sell Call Spread (Short 0.50 / Long 0.40) + Sell Put Spread (Short 0.15 / Long 0.05)
 - Credit entry, net seller capturing time decay, defined risk
+- Expirations: requires >= 7 DTE (typically 1-3 weeks) to capture steady theta; opening with <= 3 DTE strictly prohibited due to severe negative gamma risk (Quadruple Witching: select next Friday regular cycle)
 - On indices: Sell ATM call spread (contain upside) + Sell OTM put spread (0.10-0.30 delta, monetize put skew)
 - Directional variants: Neutral (0.5/0.3 + 0.3/0.1); Bearish (0.5/0.4 + 0.15/0.05); Negative-Delta (0.5/0.2 + 0.12/0.05); Positive-Delta (0.5/0.4 + 0.3/0.1); 1-2 weeks (0.5/0.35 + 0.25/0.10)
 - Put-Call Parity equivalent to Bearish BWB; distinction driven by liquidity (avoiding deep ITM fills)
@@ -105,9 +106,9 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 ### LEAPS / PMCC (Counterexample)
 - Buying back-month at peak IV gets crushed as IV normalizes; use NQ/MNQ futures directly for long leverage
 ## 3. Expiration Selection Logic
-- 0DTE: only Bearish BWB functions effectively; 0DTE Iron Condor carries excessive negative gamma risk
+- 0DTE / 1DTE: Bearish BWB strictly operates here; multi-week holding prohibited. 0DTE Iron Condor strictly prohibited due to severe negative gamma risk
 - Same-day vs Next-day: morning entry -> same-day; afternoon/evening -> next-day
-- 1-3 weeks: when market violates standard deviations, extend DTE to absorb swings and allow adjustments
+- 1-3 weeks: when market violates standard deviations, extend DTE to absorb swings and allow adjustments; Iron Condor requires >= 7 DTE
 - High VXN -> extend DTE; Low VXN -> short DTE / 0DTE only
 - Prioritize Friday expirations (peak liquidity); avoid newly listed off-cycle daily cycles
 - Avoid >90 DTE (liquidity desert, wide bid-ask)
@@ -146,15 +147,20 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 - Spot breaches first short strike by >100 pts -> evaluate; >300 pts -> roll immediately
 - Short call delta reaches 0.40 -> prepare roll; 0.30 -> mandatory roll (baseline 0.35)
 - Short put reaches 0.65 / Long put reaches 0.35 / Long call reaches 0.65 -> adjust
-- 3 days prior to expiration -> mandatory review
+- 3 days prior to expiration -> split review discipline:
+  - Short Call Spread: mandatory roll out to next week ATM (prevent decaying into deep OTM negative EV)
+  - Pure Short Put Credit Spread: hold through expiration without rolling if strikes unbreached
+- Adjustment cooldown: mandatory 30-minute lock after adjusting to prevent whipsaw fee churn
 ### Downside Defense: Rolling Upper Call Spreads
 - Close old spread -> sell next week's ATM call spread (Sell ATM, Buy OTM); configure 4 legs to Net Delta 0
 - Add +1 week DTE per roll (lock higher IV extrinsic)
 - Outward rolls dampen negative gamma, stabilizing the position
 - Roll every 200 pts vs 400 pts: similar net outcome; rolling less saves fees, but waterfall drops leave OTM calls lagging
 - Why roll: index OTM calls have negative EV, roll down to ATM promptly
-### Severe Downside: Rescuing Breached Short Puts (Textbook 6-Leg Roll)
-- Buy Classic Butterfly to roll down (6 legs): buy back short put + sell 2 lower puts (delta 0.25-0.30) + buy 1 lowest put
+### Severe Downside: BWB Discipline vs IC Rescuing Breached Puts (Textbook 6-Leg Roll)
+- Bearish BWB downside breach: defined capped max loss = wing gap (e.g. 200 vs 800 gap = $12k max loss under circuit breaker); accept predefined max loss with dignity, strictly prohibited from executing 6-leg rolls or unbundling into naked risk
+- Iron Condor / Bull Put Spread downside breach (Textbook 6-Leg Roll): buy Classic Butterfly to roll down (6 legs): buy back short put + sell 2 lower puts (delta 0.25-0.30) + buy 1 lowest put
+- Geometric Equal-Width Formula: K_wing = 2*K_body - K_upper (wing width exactly matches upper spread to guarantee Delta 0 without negative theta distortion)
 - Symmetric butterfly (1 sd wide, ~200 pts) has negative delta -> sell next week's deep OTM put spread to balance -> 6 legs Net Delta 0
 - Why butterfly: same expiration (no duration risk) / equal long-short contracts (neutral vega/gamma) / low capital / time allows short put to expire worthless
 - Splitting breached 0DTE delta: decompose 0.60 delta into 0.20-0.30 today + 0.30-0.40 Monday
@@ -166,14 +172,13 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 - Bearish BWB has zero upside risk; max loss capped at initial debit; no adjustment needed if DTE > 3 days
 - Deep ITM short call spread: long call delta reaches 0.65 -> close short call spread + buy ATM put spread (Buy 0.50, Sell 0.40) same expiry, Delta 0
 - [Spread core advantage 09/18]: long leg retains rich extrinsic during rallies; selling long leg offsets short losses; buying higher ATM put spread resets breakeven without needing spot to return to original entry; shorting the low and panic-buying the top = retail destruction
-### Dip-Buying with Positive Delta
+### Dip-Buying with Positive Delta (Method B Standalone Priority)
 - Post-crash IV surge + put skew makes selling deep OTM put spreads positive EV
-- Method 1: roll upper spread to target +0.04 to +0.05 net delta
-- Method 2: sell standalone deep OTM put credit spread (delta 0.04-0.05, 2-5 days DTE)
-- Tranche sizing: 0.04-0.05 (aggressive 0.07-0.10); scale in every 100-200 point drop across different expirations
+- Prioritize Method B (standalone deep OTM put credit spread: Sell 0.15 Put + Buy 0.05 Put, delta +0.04 to +0.05 per tranche, 2-5 days DTE) over Method A (upper spread directional roll)
+- Tranche sizing: +0.04 to +0.05 per tranche; cap aggregate portfolio delta <= +0.20 to +0.30; scale in every 100-200 point drop across different expirations
 ### Delta Portfolio Management
-- Avoid non-zero delta adjustments; accept natural delta fluctuations
-- Goal: ensure 4 legs of active roll equal Delta 0, not forcing total account delta to 0
+- Avoid non-zero delta adjustments; maintain strict Delta-0 tolerance (|net_Delta| <= 0.06 per unit, fine-tune outer wing strike if needed); accept natural minor delta fluctuations
+- Goal: ensure 4 legs of active roll equal Delta 0 (|net_Delta| <= 0.06), not forcing total account delta to 0
 - IBKR NQ delta displayed is x20; divide by 20 (multiply by 0.05) for true contract delta
 - 0.00x decimals negligible; 0.099 ~= 0.10 is material, shift strikes
 - If delta drifts too negative at troughs: sell deep OTM put spreads to replenish positive delta, don't chase price

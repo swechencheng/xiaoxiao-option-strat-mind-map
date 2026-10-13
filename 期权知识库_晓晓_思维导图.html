@@ -27,6 +27,7 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 - credit 不是你的钱（账户多了 liability）；期权非免死金牌
 - theta 不是白赚的（正theta必负gamma）
 - 中性真义：涨了愿做空、跌了愿做多
+- Delta0容忍度：实盘前两位小数0.0即合格(|net_delta|<0.10，理想<=0.06)；偏离>0.06微调最外翼strike压回
 ### 核心禁忌（穷尽）
 - 不裸卖单腿 put/call
 - 不做 wide strangle；低IV裸卖=推土机前捡硬币
@@ -49,18 +50,18 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 - 不猜顶猜底不预测短期方向
 ## 一 市场环境 → 开仓策略
 ### 核心指标
-- sd：某到期日 atm straddle 报价（atm call+put之和），与IV一一对应，到期日越远越高
+- sd与今日1sd区间：atm straddle报价(call+put mid之和)；今日1sd区间=[Spot-1sd, Spot+1sd]
 - VXN：30天纳指IV（不能概括单日，单日看单日sd）
 - IVR：<20时买1-3月long call「也许有利」
 - sd倍数语汇（3sd/7sd跌幅）
 ### 环境→策略映射
-- 暴跌/恐慌+高VXN：做空断翅蝴蝶（0dte或1-3周）delta0；可持小负delta
+- 暴跌/恐慌+高VXN：做空断翅蝴蝶（强制0dte/下午1dte）delta0；禁拉长多天期
 - 高VXN/高波动：拉长1-3周；负delta铁鹰（call0.5/0.2+put0.12/0.05净-0.2）
 - 低VXN/低波动：风险最大，买方赌小概率、卖方推土机捡硬币；极低IV做空断翅蝴蝶也危险；不做等机会
 - 区间震荡/中性：中性铁鹰（delta0）
 - 大跌后（被迫看多）：铁鹰（1-2周）；卖otm put spread拿正delta(0.3/0.1)
 - 大涨后：保持看空，做空断翅蝴蝶/负delta铁鹰
-- 到期周/四巫日/季度结算日：波动已price in，仍有上限亏损策略
+- 到期周/四巫日/季度结算日：波动已price in；铁鹰跨周开下周五(1-2周)，避<=3DTE负gamma
 - 财报前/当天：50/50赌博，不猜方向
 - 猴市/极端行情频发：有上限+拉长到期日+不做末日+deep otm下方(0.1-0.15)
 - 日元/长债：看多时卖裸put（1月，delta0.3-0.5）
@@ -68,7 +69,7 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 ### 做空方向断翅蝴蝶（标志性）
 - 构成：买1 delta0.5 put + 卖2 delta0.3(或0.4) put + 买1 delta0.1(或0.05) put
 - 标准组合 0.5/0.4/0.15/0.05（因稳定）；也可0.5/0.3/0.3/0.1等，总delta0即可
-- 到期日0dte或1-3周；只有0dte有显著盈利（时间损耗差距放大）
+- 到期日强制0dte(上午)或1dte(下午/尾盘)；只有0dte/1dte才有显著时间衰减差异盈利，14天两翼抵消无效
 - delta0、debit入场、theta正、vega平衡
 - 0dte损益：跌9刀翻6倍、不动翻2倍、涨5刀亏50%
 - 最大亏损=翅膀宽度差（下9+再下15=差6刀）；QQQ 600刀/NQ 4800刀
@@ -77,6 +78,7 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 ### 铁鹰 Iron Condor
 - 构成：卖call spread(短0.5/长0.4) + 卖put spread(短0.15/长0.05)
 - credit入场、净卖出赚时间损耗、有上限亏损
+- 到期日强制1-3周(7-14天，>=7天)；禁<=3DTE末日陷阱(负gamma暴击)
 - 指数上：卖含atm call(控上方)+卖含otm put(0.1-0.3，利用put skew)
 - 中性 0.5/0.3+0.3/0.1；看空 0.5/0.4+0.15/0.05；负delta 0.5/0.2+0.12/0.05；正delta 0.5/0.4+0.3/0.1；1-2周 0.5/0.35+0.25/0.1
 - 与断翅蝴蝶 put-call parity 对等，差别在流动性（避itm）
@@ -142,7 +144,8 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 - 跌破第一short strike>100点考虑、>300点立刻
 - short call delta 0.4开始roll、0.3必须roll（参照0.35）
 - short put 0.65 / long put 0.35 / long call 0.65→处理
-- 到期前3天必评估
+- 到期前3天处置分拆：含short call必须强制roll后展一周避负gamma(must级，防跑马)；纯put spread持有到期归零(watch级)
+- 调仓冷却锁：两次调仓至少间隔30分钟，防频繁反向磨损
 ### 下跌：上方spread的roll
 - 平原spread→卖下一周atm call spread（卖atm买otm），4腿roll delta0
 - 每次roll向后加一周（锁高IV）
@@ -150,8 +153,8 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 - 每跌200点roll一次vs一次400点：差别不大，少roll省损耗但极端行情吃不饱跌幅
 - 为何roll：指数卖otm call负期望，尽快roll到atm
 ### 继续跌：下方short put救法（教科书）
-- 买蝴蝶向下roll(6腿)：回补已有short put+卖2个更下put(delta0.25-0.3)+买1最下put
-- 经典蝴蝶(等宽1sd约200点)必负delta→再卖下周deep otm put spread平衡→6腿delta0
+- 普通铁鹰/put spread被击穿：买蝴蝶向下roll(6腿，回补原有+卖2更下+买1最下，两翼严格几何等宽K_wing=2*K_body-K_upper)+卖下周deep otm put spread平衡→6腿delta0
+- 断翅蝴蝶(BWB)被击穿：最大亏损封顶(宽度差)，晓晓纪律：接受封顶亏损持有到期/整组止损，严禁拆单6腿蝴蝶救
 - 为何蝴蝶：同到期日无多一天风险/买卖数量同vega gamma小/成本低/耗到归零不亏
 - 末日被击穿：0.6delta拆成末日0.2-0.3+周一0.3-0.4
 - 买atm call横盘：向上roll100点+买次日atm call spread组delta0
@@ -164,8 +167,7 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 - 【spread核心9/18】卖long leg入账extrinsic抵消做空亏损；买atm put spread在更高价继续做空，breakeven远优于裸空；低位做空涨起追涨止损=韭菜
 ### 抄底正delta
 - 大跌后卖deep otm put spread抄底正期望
-- 方式一：roll上方时调成0.04-0.05正delta
-- 方式二：卖新deep otm put spread(delta0.04-0.05，2-5天)
+- 抄底方式选择：坚决反对方式一(在roll组合带偏差)；严格推荐方式二(独立开仓2-5天deep otm put spread，单组净delta0.04-0.05，总组合delta<=0.2-0.3)
 - 单次0.04-0.05；大抄0.07-0.1；每跌100-200点抄一次不同到期日
 ### delta管理
 - 一般不做非delta0调整；接受市场给delta
