@@ -21,7 +21,7 @@ The repository consists of complete chronological archives, an exhaustive 12-sec
 | File                                                                                               |  Language  | Description                                                                                                                                                                              |
 | :------------------------------------------------------------------------------------------------- | :--------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`期权知识库_晓晓.md`](./期权知识库_晓晓.md)                                                       |  🇨🇳 中文   | The complete chronological archive of **354 real-world Q&A case studies** across 4 months (June to September 2026), capturing complete member inquiries and Xiaoxiao's in-depth answers. |
-| [`期权知识库_晓晓_思维导图.md`](./期权知识库_晓晓_思维导图.md)                                     |  🇨🇳 中文   | Complete 12-section structured taxonomy and mind map distilling all 354 cases into quantitative trading rules, setup parameters, and defensive playbooks.                                |
+| [`期权知识库_晓晓_思维导图.md`](./期权知识库_晓晓_思维导图.md)                                     |  🇨🇳 中文   | Complete 12-section structured taxonomy and mind map distilling all 354 cases into trading rules, setup parameters, Greeks mechanics, and defensive playbooks.                           |
 | [`期权知识库_晓晓_思维导图.html`](./期权知识库_晓晓_思维导图.html)                                 |  🇨🇳 中文   | Interactive HTML mind map powered by Markmap with pan, zoom, and collapsible nodes.                                                                                                      |
 | [`options_knowledge_base_xiaoxiao_mind_map.md`](./options_knowledge_base_xiaoxiao_mind_map.md)     | 🇬🇧 English | Precise, full-length English translation of the 12-section taxonomy and strategy mind map.                                                                                               |
 | [`options_knowledge_base_xiaoxiao_mind_map.html`](./options_knowledge_base_xiaoxiao_mind_map.html) | 🇬🇧 English | Interactive English Markmap visualization ready to open in any web browser.                                                                                                              |
@@ -33,48 +33,43 @@ The repository consists of complete chronological archives, an exhaustive 12-sec
 
 ### 1. The Three Pillars of Xiaoxiao's Trading Philosophy
 
-1. **Trade strictly defined-risk strategies with capped maximum loss** (Bearish Broken Wing Butterflies, Iron Condors); aggressively eliminate uncapped, undefined risk (naked single legs, wide strangles, 1:2 put ratios).
-2. **Execute strictly Delta-0 (delta-neutral) structures; never gamble on direction**—do not attempt to predict tops or bottoms; enforce a strict tolerance of $|\text{net\_Delta}| \le 0.06$ per unit (fine-tuning the outer wing strike by 25–50 pts if non-zero); harvest edge from time decay (Theta) and volatility mechanics rather than directional guesswork.
+1. **Trade strictly defined-risk strategies with capped maximum loss** (Bearish Broken Wing Butterflies, Iron Condors, Vertical Spreads); aggressively eliminate uncapped, undefined risk (naked single legs, wide strangles, 1:2 put ratios).
+2. **Execute Delta-0 (delta-neutral) structures and adjust via Delta-0 rolls; never gamble on short-term direction**—do not attempt to predict tops or bottoms; on IBKR's NQ order screen (which displays Delta multiplied by 20), any combo reading `0.0xx` in its first two digits (e.g., `0.037`, `-0.076`, `+0.080`) is compliant; harvest edge from time decay (Theta), index Put Skew, and non-Delta Greeks rather than directional guesswork.
 3. **Focus on committing fewer errors rather than pursuing theoretical maximum returns**, adhering firmly to:
    > _"Don't worry about where it came from, only worry about where it's going."_  
-   > Entry costs and historical P&L are sunk costs; evaluate trades solely on whether the forward structure holds positive mathematical expectancy (+EV).
+   > Combined with **Buffett's "Overnight Cash" Rule** (imagine your portfolio were liquidated into cash every night—would you re-enter the exact same position tomorrow?), entry costs and historical P&L are sunk costs; evaluate trades solely on whether the forward structure holds positive mathematical expectancy (+EV).
 
 ### 2. Core Strategy Architectures
 
-- **Bearish Broken Wing Butterfly (BWB - Signature Setup)**:
-  - _Standard Configuration_: Buy 1 ATM Put (0.50 $\Delta$) + Sell 2 OTM Puts (0.40 $\Delta$) + Buy 1 Deep OTM Put (0.05–0.15 $\Delta$) on NQ / QQQ.
-  - _Strict Cycle Discipline_: **Exclusively 0DTE (intraday) or 1DTE (overnight)**. Multi-week holding is strictly prohibited due to sluggish non-0DTE decay gaps and prolonged tail risk exposure.
-  - _Edge & Downside Capped Loss_: Zero upside tail risk (max loss capped at initial entry debit), positive theta decay, vega-neutral balance, and rapid profitability in 0DTE. Downside extreme breach max loss is strictly capped at wing width difference (e.g. 200 vs 800 gap = $12k max loss under circuit breaker)—accept predefined max loss with dignity; **strictly prohibited from executing 6-leg rolls or unbundling into naked risk**.
+- **Bearish Broken Wing Butterfly (BWB — Signature Setup)**:
+  - _Two Configurations_:
+    1. **4-Strike Split BWB (`0.50 / 0.40 / 0.15 / 0.05` Put Deltas — Standard Benchmark)**: Buy 1 upper `0.50/0.40` Put Spread + Sell 1 lower `0.15/0.05` Deep OTM Put Spread for a small net debit and Net Delta 0.
+    2. **3-Strike Classic BWB (`0.50 / 0.30 / 0.30 / 0.10` Put Deltas)**: Buy 1 ATM `0.50` Put + Sell 2 OTM `0.30` Puts + Buy 1 Deep OTM `0.10` Put.
+  - _Wing-Width Ratio Rule_: The lower sold spread width must be **at least 2x** the upper bought spread width (e.g., 200–300 pts upper vs. 600–1000 pts lower). Because index Put Skew makes the wide lower put spread rich in premium, rallies barely lose money as lower put gains offset upper spread decay.
+  - _Expiration Regimes_: **0DTE / 1DTE** when single-day expected move (`sd`) is high and rapid intraday decay differentiation is desired; **1–3 Weeks (8–28 DTE)** during elevated VXN or frequent 3sd whipsaw regimes (earning `+$50 to +$178/day` in positive Theta on NQ with wide downside room).
 - **Iron Condor (IC)**:
-  - _Structure_: Sell ATM Call Spread (short 0.50 / long 0.40) + Sell Deep OTM Put Spread (short 0.15 / long 0.05).
-  - _DTE Discipline_: **Requires $\ge 7$ DTE (typically 1–3 weeks)** to harness steady theta decay; **opening with $\le 3$ DTE is strictly prohibited** due to severe negative gamma curvature. (On Quadruple Witching expiration week, select the following Friday's regular cycle).
-  - _Mechanics_: Net credit entry monetizing time decay and index put skew.
-- **Deep OTM Put Credit Spreads (Method B Standalone Dip-Buying Engine)**:
-  - Prioritize standalone deep OTM put credit spreads (Sell 0.15 Put + Buy 0.05 Put, +0.04 to +0.05 net delta per tranche, 2–5 days DTE) over upper spread directional rolls post-selloff to capitalize on inflated OTM put IV while staggering expirations.
-  - Sizing discipline: Scale in every 100–200 point drop, capping aggregate portfolio positive delta $\le +0.20$ to $+0.30$.
+  - _Structure_: Sell ATM Call Spread (short `0.50` / long `0.40`) + Sell Deep OTM Put Spread (short `0.15` / long `0.05`) for a net credit at Net Delta 0 (Put-Call Parity equivalent to the `0.50/0.40/0.15/0.05` BWB, distinguished by avoiding illiquid ITM calls).
+  - _Expiration Regimes_: **1–3 Weeks DTE** in high IV; **0DTE / 1DTE (`末日铁鹰`)** in low IV or when actively monitoring the screen.
+- **Deep OTM Put Credit Spreads (Post-Crash Dip-Buying)**:
+  - _Prerequisite ("Delta Kills")_: Only accounts holding a strong negative-delta short base are qualified to dip-buy crashes; bullish/long-stock accounts must **never** dip-buy with put spreads, as doing so accelerates account liquidation.
+  - _Two Methods_: **Method 1** tilts the 4-leg upper spread downward roll to `+0.03 to +0.07` positive delta (adds zero new downside breach risk, ideal when the upper spread is already OTM); **Method 2** sells a standalone 1–5 day (often 1–3 day) deep OTM put credit spread (`0.15/0.05` delta, `+0.04 to +0.05` net delta per tranche). Scale in every 100–200 pt NQ drop across **staggered expirations**; never combine a 4-leg roll and a 2-leg directional put spread into a single 6-leg order.
 
 ### 3. Quantitative Risk & Defense Playbooks
 
-- **Strict Quantitative Triggers**:
-  - Upper short call drops 200 points below spot $\rightarrow$ initiate a roll downward and outward.
-  - Spot breaches the short strike by $>100$ points $\rightarrow$ evaluate defense; breaches by $>300$ points $\rightarrow$ execute roll immediately.
-  - Short call delta reaches 0.35 $\rightarrow$ roll down to ATM to avoid holding negative-EV OTM calls under index put skew.
-  - **Pre-Expiry 3-Day Split Discipline**:
-    - **Short Call Spreads**: Mandatory roll out to next week's ATM (avoid holding into $\le 3$ DTE negative gamma and decaying into negative-EV deep OTM).
-    - **Pure Short Put Spreads**: Hold through expiration without rolling if strikes remain unbreached.
-  - **Adjustment Cooldown Lock**: Mandatory 30-minute lock after adjusting to prevent whipsaw fee churn.
-  - **Daily 1sd Expected Move**: Derived directly from the 0DTE ATM Straddle mid price ($[S - \text{Straddle}_{\text{ATM}}, S + \text{Straddle}_{\text{ATM}}]$, approx $IV \times S \times \sqrt{1/252}$) rather than generic 30-day index IV.
-- **The Textbook 6-Leg Roll (Rescuing Breached Iron Condor / Bull Put Spreads)**:
-  - Applies strictly to Iron Condors and Bull Put Spreads (not BWBs).
-  - Convert the breached short put into a same-expiry, 1-sd wide Classic Symmetric Butterfly + sell a deep OTM put credit spread for the subsequent week to balance net Delta back to 0.
-  - **Geometric Equal-Width Formula**: $K_{\text{wing}} = 2K_{\text{body}} - K_{\text{upper}}$ (the lower wing width must exactly match the upper spread width to preserve exact Delta 0 without negative theta distortion).
-- **Zero Panic Liquidations**:
-  - Only three legitimate operational paths: let options expire worthless, scale into new tranches, or roll out in time. No mechanical stop-losses at the bottom.
+- **Downside Roll of Upper Spreads**:
+  - When spot drops 150–200 pts (or upper short call delta drops to `0.35`, with `0.40` prepare / `0.30` mandatory), close the upper spread and roll down and out (+1 week) into a new ATM Call Spread at 4-leg Delta 0. Delaying until 650–800 pts OTM causes "Double-Sided Losses (`两头亏`)."
+- **Rescuing Breached Lower Short Puts (6-Leg Butterfly Roll & Second-Breach Leg Cancellation)**:
+  - When a short put is touched or breached (`0.50–0.65` delta), buy a same-expiry Butterfly or Broken-Wing Butterfly (~1 sd / 200–400 pts wide, ideally during an intraday bounce) + sell next week's deep OTM put spread to balance negative Delta back to 0.
+  - **Why Equal-Width Wings Are Preferred**: An equal-width butterfly ($K_{\text{upper}} - K_{\text{body}} = K_{\text{body}} - K_{\text{wing}}$) has zero net payoff below the lowest wing at expiration, adding **zero extra maximum downside risk** beyond the original spread.
+  - **Second-Breach Automatic Leg Cancellation**: If breached a second time, the 2 newly sold center puts of the second butterfly land directly on the strikes of your existing 2 protective long puts, automatically closing out the old legs without accumulating leg count.
+- **Upside Defense ( rallies pushing Upper Long Call to `0.65` Delta or BWB Upper Long Put to `0.35` Delta)**:
+  - For an ITM Short Call Spread (`Long Call >= 0.65` delta): Close the call spread and buy an ATM Put Spread (`0.50/0.40`) or sell a new ITM Call Spread (`0.60/0.50`) at Delta 0—and because **low IV during a rally favors *buying* longer-dated extrinsic value**, extending DTE by 4–7 days into next week is advantageous.
+  - For a BWB's upper `Long Put` dropping to `0.35` delta: Either build a higher-strike same-expiry BWB using the old `0.35` Long Put as one of the new Short Put legs to cancel it out, or roll the upper put spread out 1 week.
 
 ### 4. Execution & Instrument Efficiency
 
-- **NQ Futures Options as Primary Vehicle**: 24/5 liquidity, punctual 4:00 PM cash close, CME SPAN margin efficiency (5–10%), and $>70\%$ lower transaction drag compared to trading equivalent notional in QQQ ETF options.
-- **Direct Broker Routing**: Using Interactive Brokers (IBKR) to avoid retail Payment-for-Order-Flow (PFOF) slippage.
+- **NQ Futures Options as Primary Vehicle**: 23-hour liquidity, punctual 4:00 PM cash close, CME SPAN margin efficiency (5–10%), 4% annual quarterly futures contango tailwind for shorts (+200–300 pts), and $>70\%$ lower transaction drag compared to QQQ ETF options.
+- **Direct Broker Routing**: Interactive Brokers (IBKR) Margin Account with Non-Professional CME Level 1 data, ungrouped portfolio legs sorted by instrument, and never leaving high-credit limit orders resting for adverse-selection fills.
 
 ---
 

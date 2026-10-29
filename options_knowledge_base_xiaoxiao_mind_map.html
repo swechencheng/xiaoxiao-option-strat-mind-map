@@ -17,218 +17,157 @@ body { background: #f5f5f7; font-family: -apple-system, BlinkMacSystemFont, "Seg
 # Xiaoxiao Options Knowledge Base (Exhaustive 354-Case Synthesis to 09/18)
 ## 0. Trading Philosophy & Core Prohibitions
 ### 3 Core Rules
-- Trade strictly defined-risk strategies (BWB / Iron Condor); abhor uncapped risk (naked single legs, wide strangles, put ratios)
-- Trade strictly Delta-0 (neutral; tolerance |net_Delta| <= 0.06 per unit, fine-tune outer wing strike if needed); never gamble on direction (no top/bottom guessing); extract edge from Theta & Greeks
-- Focus on making fewer mistakes rather than pursuing theoretical maximums; evaluate forward expectancy (+EV), ignore sunk costs
+- Trade strictly defined-risk strategies (BWB / Iron Condor / Vertical Spreads); abhor uncapped risk (naked single legs, wide strangles, put ratios)
+- Trade Delta-0 structures (or adjust via Delta-0 rolls); never guess short-term tops/bottoms; harvest edge from Theta, Skew & non-Delta Greeks
+- Make fewer errors rather than chasing max returns; follow "don't worry where it came from, worry where it's going" & Buffett's "Overnight Cash" Rule (+EV forward view)
 ### Core Principles
-- Structurally bearish on Nasdaq (-20%, targeting QQQ down to 600)
-- [09/18 Evolution]: 09/11 stated "perma-bull" against extreme doom-mongers (PE/PD credit strain -> rate cuts), but retained short call spreads + dip-buying; not a naive Nasdaq bull
-- Essence of options: monetize non-Delta Greeks (Theta, Vega, Gamma, Charm) rather than directional betting
+- Structurally bearish on Nasdaq (-20%, targeting QQQ 600; with 5% annual risk-free rates, 4 years of flat Nasdaq = 20% real decline)
+- [09/11 True Context]: Stated "perma-bull" when discussing US Treasury Bonds (PE/PD & corporate debt at 11% yield nearing default -> hot money rotating back to risk-free 5% Treasuries); remained net short Nasdaq via ITM call spreads + dip-buying puts
+- Essence of options: monetize non-Delta Greeks (Theta, Vega, Gamma, Charm, Vanna)
 - Target profit profile: 30-50% from Delta, 50-70% from non-Delta Greeks
-- Option credits are balance-sheet liabilities, not free cash; options cannot retroactively fix account drawdowns
-- Theta is never free lunch (positive theta strictly mandates negative gamma)
-- Neutrality definition: willing to short into rallies, willing to buy into sell-offs
+- Option credits are balance-sheet liabilities; "Melting Ice Cream Truck" analogy (sellers lock in buyers' missed opportunity cost)
+- Theta is never free lunch (positive theta mandates negative gamma)
+- Practical Delta-0 tolerance: on IBKR NQ order screen (already x20 multiplier), first two digits reading 0.0 (e.g. 0.037, -0.076, +0.080) is compliant; shift one strike if drifting near 0.10
 ### Core Prohibitions (Exhaustive)
-- Never sell naked single-leg puts or calls
+- Never sell naked single-leg puts or calls (critiques classic Wheel Strategy: unable to sell calls at original cost basis after crash assignment)
 - Never sell wide strangles; selling naked in low IV = picking up nickels in front of steamrollers
 - Never trade Put Ratio Spreads (1:2, catastrophic uncapped downside)
 - Never sell OTM index calls (underpriced due to put skew, negative EV); sell ATM calls only
-- Avoid diagonal / wide-gap calendar spreads; maximum allowable gap in high IV is 1-2 days
+- Avoid wide-gap diagonals; max allowable gap in high IV is 1-2 days (e.g. 0DTE/1DTE staggered IC or BWB diagonal)
 - Never trade reverse diagonals (buying near-term, selling longer-dated)
-- Never trade LEAPS calls or Poor Man's Covered Calls (PMCC; unpredictable back-month extrinsic)
+- Never trade LEAPS calls or PMCC (unpredictable back-month extrinsic + ~10% immediate entry slippage loss)
 - Never be a net seller in Low IV + Long DTE (double blow from crash + IV surge)
 - Never trade deep ITM options (delta > 0.70; illiquid, wide spreads)
 - Never trade Micro E-mini Nasdaq (MNQ) options (10x transaction drag vs NQ)
-- Never trade options expiring beyond 90 days (liquidity desert, wide bid-ask)
-- Avoid retail PFOF brokers (Futu, Robinhood; inferior fills, $20+ slippage per ticket)
-- Never rely on AI answers or generic calculators (hallucinations without live CME/IBKR data)
-- Never use mechanical stop-losses or profit targets (forces panic-selling at lows or premature exits)
+- Never trade options expiring beyond 90 days
+- Avoid retail PFOF brokers (Futu, Robinhood); never use a Cash Account (even 1:1 vertical spreads require a Margin Account)
+- Never rely on AI answers or generic calculators without live CME/IBKR data
+- Never use mechanical stop-losses or 80% profit targets (surrenders final 20% free decay)
 - Never concentrate risk in a single expiration date
-- Beginners: avoid complex multi-leg combinations and avoid opening disconnected secondary spreads (widen existing spreads, reuse legs)
-- Do not chase rallies or panic-sell lows only to buy back higher (thesis inconsistency)
-- Avoid complex multi-leg spreads on individual single equities (call skew + low stock prices)
-- Avoid attempting to time tops or bottoms via technical indicators
+- Beginners: avoid opening disconnected secondary positions (widen existing spreads or overlap legs to save fees)
+- Bullish / Long-Stock accounts must NEVER dip-buy with put spreads during a crash (accelerates liquidation without negative-delta hedge)
+- Never pay $4 to close a deep OTM short put early just to "free up your own margin"
 ## 1. Market Regimes & Strategy Calibration
 ### Core Metrics
-- sd (single-day expected move): ATM straddle price (ATM call + put, 1sd = [S - Straddle_ATM, S + Straddle_ATM], approx IV * S * sqrt(1/252)), maps 1:1 with IV, widens with DTE
-- VXN: 30-day Nasdaq IV (does not fully reflect single-day move; check daily straddle sd)
+- sd (single-day expected move): ATM straddle price (ATM call + put); Overnight sd (to 9:30 AM open, ~100 pts) vs Full-day sd (to 4:00 PM close)
+- VXN: 30-day Nasdaq IV (check daily straddle sd for single-day move)
 - IVR: <20 buying 1-3 month calls is marginally viable
-- Standard deviation vocabulary: 3sd / 7sd moves
+- Standard deviation vocabulary: 3sd / 7sd moves (frequent in thin night/holiday sessions due to dealer DDH)
 ### Regime-to-Strategy Mapping
-- Severe crash / panic + High VXN: Bearish BWB (strictly 0DTE/1DTE only, multi-week holding prohibited) Delta 0; mild short delta bias
-- High VXN / sustained volatility: extend DTE to 1-3 weeks; Negative-Delta Iron Condor (Call 0.5/0.2 + Put 0.12/0.05, net -0.2)
-- Low VXN / suppressed volatility: highest latent risk (buyers face low odds, sellers face steamroller); BWBs dangerous as short put sits too close; sit out and wait
-- Range-bound / consolidation: Neutral Iron Condor (Delta 0, time decay engine)
-- Post-crash rebound (forced short-term bullish): Iron Condor (1-2 weeks); or sell OTM put spreads for positive delta (0.3/0.1)
-- Post-parabolic rally (overbought): retain bearish bias, Bearish BWB or negative-delta Iron Condor
-- Expiration week / Quadruple Witching / futures roll: volatility already priced into sd; defined-risk only
-- Pre-earnings / earnings day: 50/50 binary gamble, avoid guessing
-- Whipsaw / fat-tail regimes (frequent 3sd-7sd moves): defined-risk + extend DTE + avoid 0DTE + deep OTM puts (0.10-0.15 delta)
+- Severe crash / panic + High VXN: Bearish BWB (0DTE/1DTE or 1-3 weeks) Delta 0; or two-step Legging-In (open upper ATM call spread at close, sell wide deep OTM put spread into night crash + IV spike)
+- High VXN / Whipsaw regime (frequent 3sd swings): extend to 1-3 weeks (8-20 DTE) with 0.5/0.4/0.15/0.05 Bearish BWB or Iron Condor (+$70 to +$178/day Theta on NQ)
+- Low VXN / Very low single-day sd: highest latent risk; 0DTE BWB not recommended (short strikes too close); sit out, trade 0DTE IC if watching screen, or use 1-3 week BWB
+- Range-bound / consolidation: Neutral Iron Condor (Delta 0)
+- Post-crash aftermath (forced short-term bullish): 1-2 week Iron Condor (0.5/0.35 + 0.25/0.10) or sell deep OTM put spreads
+- Post-parabolic rally: retain bearish bias, Bearish BWB or Bearish Iron Condor
+- Expiration week / Quadruple Witching / futures roll: volatility priced into sd; defined-risk only, typically next Friday expiry
+- Pre-earnings / earnings day: 50/50 gamble, do not guess direction
 - JPY / US Treasuries: sell naked puts when bullish (1 month DTE, delta 0.3-0.5)
 ## 2. Core Strategy Leg Formations
 ### Bearish Broken Wing Butterfly (BWB - Signature Setup)
-- Structure: Buy 1 ATM Put (0.50 delta) + Sell 2 OTM Puts (0.30 or 0.40 delta) + Buy 1 Deep OTM Put (0.10 or 0.05 delta)
-- Standard benchmark: 0.50 / 0.40 / 0.15 / 0.05 (stability); alternative: 0.5/0.3/0.3/0.1; total net Delta = 0
-- Expirations: strictly 0DTE (intraday) or 1DTE (overnight); multi-week holding strictly prohibited due to sluggish non-0DTE decay gaps and prolonged tail risk exposure
-- Net Delta 0, debit entry, positive theta, neutral vega balance
-- 0DTE P&L profile (0.92 debit): -9 pt drop -> expands to 5.49 (~6x); flat -> expands to 1.99 (~2x via theta); +5 pt rally -> drops to 0.48 (-50%)
-- Max loss = wing width difference (upper 9 vs lower 15 = 6 pt gap; QQQ $600 / NQ $4,800)
-- Standard wing widths: 200 vs 800 gap = $12k max loss under extreme circuit breaker
-- Why broken wing over classic butterfly: symmetric wings shift shorts lower -> negative delta + smaller credit -> negative theta + directional drag
+- Structure 1 (3-Strike 1:2:1, early June 0DTE): Buy 1 ATM Put (0.50) + Sell 2 OTM Puts (0.30) + Buy 1 Deep OTM Put (0.10)
+- Structure 2 (4-Strike Split 1:1:1:1, standard benchmark 0.50/0.40/0.15/0.05): Buy upper 0.50/0.40 Put Spread + Sell lower 0.15/0.05 Put Spread
+- Wing-Width Ratio Rule: Net Delta 0, and lower sold spread width MUST be >= 2x upper bought spread width (e.g. 200-300 pts upper vs 600-1000 pts lower)
+- Why Debit entry & barely loses on rallies: wide lower put spread is richly priced via index put skew, offsetting upper spread decay on rallies; conversely Bullish Call BWB fails on indices because upper OTM calls are too cheap
+- Expirations: 0DTE/1DTE when VXN/sd is high; 1-3 weeks (8-28 DTE, +$50 to +$178/day Theta, hold >= 3 days) in whipsaw regimes; avoid 45-DTE
+- 0DTE P&L profile (0.92 debit): -9 pt drop -> 5.49 (~6x); flat -> 1.99 (~2x); +5 pt rally -> 0.48 (-50%)
+- Max loss = wing width difference (200 vs 800 gap = $12k max loss in circuit breaker); early stop near lowest strike on 0DTE salvages $2-3 extrinsic
 ### Iron Condor (IC)
-- Structure: Sell Call Spread (Short 0.50 / Long 0.40) + Sell Put Spread (Short 0.15 / Long 0.05)
-- Credit entry, net seller capturing time decay, defined risk
-- Expirations: requires >= 7 DTE (typically 1-3 weeks) to capture steady theta; opening with <= 3 DTE strictly prohibited due to severe negative gamma risk (Quadruple Witching: select next Friday regular cycle)
-- On indices: Sell ATM call spread (contain upside) + Sell OTM put spread (0.10-0.30 delta, monetize put skew)
-- Directional variants: Neutral (0.5/0.3 + 0.3/0.1); Bearish (0.5/0.4 + 0.15/0.05); Negative-Delta (0.5/0.2 + 0.12/0.05); Positive-Delta (0.5/0.4 + 0.3/0.1); 1-2 weeks (0.5/0.35 + 0.25/0.10)
-- Put-Call Parity equivalent to Bearish BWB; distinction driven by liquidity (avoiding deep ITM fills)
-- Iron Condor yields higher flat profit; BWB requires drop to short strike for maximum profit; IC suffers severe put losses during crashes
+- Structure: Sell Call Spread (0.50/0.40) + Sell Put Spread (0.15/0.05), credit entry, Net Delta 0
+- Expirations: 1-3 weeks in high IV; 0DTE/1DTE Iron Condor viable in low IV or when actively watching screen
+- Wing-Width Ratio: lower put spread width must be >= 2x upper call spread width
+- Variants: Neutral (0.5/0.3+0.3/0.1); Bearish (0.5/0.4+0.15/0.05); 1-2 weeks (0.5/0.35+0.25/0.10); Positive-Delta (0.5/0.4+0.3/0.1)
+- Clarification on "-0.20 Delta IC": never enter a new trade at -0.20 delta to bet on direction (= shorting 170 shares QQQ naked); seen only in two-step legging-in or legacy deep ITM call spreads paired with short puts
+- Put-Call Parity equivalent to 4-strike BWB: named differently only to avoid illiquid ITM calls (0.60/0.50) by buying ATM puts (0.50/0.40)
+- IC vs BWB: IC earns more in flat chop (diverges after 3 hours on 0DTE), but in crashes lower put losses can far exceed capped upper call gains
 ### Deep OTM Put Credit Spread (Dip-Buying Engine)
 - Structure: Sell 1 Delta 0.15 (or 0.13/0.10) Put + Buy 1 Delta 0.05 (or 0.09/0.05) Put
-- Net Delta: +0.04 to +0.05 per tranche; 2-5 days DTE (novices: 5 days / Friday expiry)
-- High VXN allows 1-2 weeks (up to 3 weeks); low VXN prohibits selling puts beyond 2 weeks
-- Dip-buying thesis: post-crash IV surge + put skew inflates OTM puts, creating positive EV; full profit if strikes unbreached
-- Scale in every 100-200 point drop, staggering across different expiration dates
-- Never use to take assignment of underlying shares
-### Covered Call / Cash-Secured Put
-- With cash: Buy 100 shares + Sell 1-month ATM call
-- Without cash: Sell 1-2 month ATM naked put
-- Put-Call Parity: Long 100 shares + Short Call = Short Put
-- Hedging long stock: Sell 1-month ATM call = -0.50 delta (equivalent to cutting 50% position)
-### Classic Butterfly (Symmetric)
-- Equal wing widths mandate non-zero delta + negative theta; gambling on volatility; used strictly as defense tool
-### Put Ratio Spread (1:2 Counterexample)
-- Buy 1 delta 0.50 + Sell 2 delta 0.25; net short lower wing; 7sd crash loses $25 vs $4-5 on BWB
-### Naked Puts (Treasuries / JPY Exception)
-- Bullish ZB / JPY futures: sell naked puts, ~1 month DTE, delta 0.30-0.50
-### Diagonal Spreads (Caution / Counterexample)
-- Large expiration gap creates massive IV mispricing risk; buying back-month in high IV is fatal; low IV buy-far/sell-near only
-### LEAPS / PMCC (Counterexample)
-- Buying back-month at peak IV gets crushed as IV normalizes; use NQ/MNQ futures directly for long leverage
+- Net Delta: +0.04 to +0.05 per tranche; 1-5 days DTE (Xiaoxiao prefers 1-3 days; novices 5 days/Friday; 1-2 weeks or matching upper expiry when VXN spikes)
+- Thesis: post-crash IV surge + put skew inflates OTM puts; profits even in slow downward drift, and can be rescued via butterfly if breached
+- Scale in every 100-200 pt NQ drop across distinct expiration dates; never use to take share assignment
+### Covered Call / Cash-Secured Put & 4% Implied Interest
+- With cash: Buy 100 shares + Sell 1-month ATM call; Without cash: Sell 1-2 month ATM naked put
+- 4% Implied Loan Interest: non-cash bullish options (e.g. buying calls) implicitly pay ~4% annual interest; buying 100 shares + selling ATM call (or selling put) collects that 4% interest
+- Hedging leveraged ETFs (e.g. TQQQ): reduce share size directly rather than buying mismatched single-leg puts
+### Classic Butterfly, Put Ratio & Naked Puts
+- Classic Butterfly: equal wings mandate negative delta + negative theta; used strictly to rescue breached short puts
+- Put Ratio (1:2): uncapped downside; 7sd crash loses $25 vs $4-5 on BWB
+- Naked Puts (ZB / JPY): ~1 month DTE, 0.30-0.50 delta; lesson: JPY 0.0063 naked put suffered 3% (7sd) surge 1 day before expiry, wiping delta to 0 and missing the rally
+### Diagonals & Trapped LEAPS Spread Rescue
+- High-IV 1-day diagonal exception: sell 0DTE short legs + buy 1DTE long legs
+- Rescuing a trapped illiquid LEAPS spread (SNDK 2027 case): do not close immediately for another 10% slippage loss; sell a 3-month OTM Call Spread (-0.05 delta) to neutralize total Delta to 0, or hold 1 year until liquidity improves
 ## 3. Expiration Selection Logic
-- 0DTE / 1DTE: Bearish BWB strictly operates here; multi-week holding prohibited. 0DTE Iron Condor strictly prohibited due to severe negative gamma risk
-- Same-day vs Next-day: morning entry -> same-day; afternoon/evening -> next-day
-- 1-3 weeks: when market violates standard deviations, extend DTE to absorb swings and allow adjustments; Iron Condor requires >= 7 DTE
-- High VXN -> extend DTE; Low VXN -> short DTE / 0DTE only
-- Prioritize Friday expirations (peak liquidity); avoid newly listed off-cycle daily cycles
-- Avoid >90 DTE (liquidity desert, wide bid-ask)
-- When to extend DTE: during steep sell-offs as VXN rises, lock in elevated extrinsic value
-- When to shorten/avoid extending DTE: during rallies as IV compresses, never sell cheap back-month extrinsic
-- Quarterly futures roll: September NQ cash-settles at 9:30 AM open; parallel chain on December NQ settles at 4:00 PM close
+- 0DTE Profit Window & Asian Auto-Close: close 0DTE combos at 1:00-3:00 PM ET (50%-75% max profit); set 2:10 PM ET auto-close order if sleeping in Asian timezone
+- 1-3 Weeks: primary choice for 0.5/0.4/0.15/0.05 BWB or IC during high VXN or frequent 3sd whipsaw regimes
+- Low IV Rally Nuance: never extend DTE to SELL extrinsic in low IV, but low IV is ideal for BUYING longer-dated extrinsic (e.g. extending 4-7 days when buying a 0.5/0.4 ATM Put Spread to rescue a breached Call Spread)
+- Quarterly Futures Roll & Contango (+200-300 pts): expiring AM options cash-settle at 9:30 AM (margin freed immediately); next-quarter NQ futures trade 200-300 pts higher due to 4% annual (1% quarterly) interest carry—a structural tailwind for shorts
 ## 4. Underlyings & Tools
-- NQ futures options (Primary): 20x multiplier ($570k-600k notional), 8x QQQ, 24/5 trading, punctual 4:00 PM cash close, 70%+ fee savings
-- QQQ ETF options (Secondary): delayed settlement (4:15 PM trade, 5:30 PM exercise cutoff), 8x higher transaction friction relative to notional
-- MNQ options (Prohibited): 2x multiplier, thin order books, 10x execution drag
-- SPX / NDX: SPX 1 contract = 10 SPY (deep liquidity, avoid AM quarterly gaps); NDX $3M notional, wide spreads, avoid
-- S&P (ES) vs Nasdaq (NQ): S&P has sector noise; stick to pure tech NQ; tech bubble burst leads Nasdaq down cleanly
-- Single stocks: viable only on mega-caps; call skew makes short OTM calls exceedingly dangerous
-- Broker: Interactive Brokers (IBKR; no PFOF, direct routing); Futures + Options permissions + CME Level 1 feed
-- Margin: defined-risk margin = max loss; NQ 5-10% SPAN vs QQQ 20-30% Reg-T; shift put spread up or narrow wings if constrained
-- Fees: ~$1/contract exchange & clearing fees; multi-leg rolls average ~$20 total friction (dominated by bid-ask slippage)
+- NQ futures options (Primary): 20x multiplier ($570k-600k notional), 8x QQQ, >70% fee savings, 23h trading (closed 5:00-6:00 PM ET), punctual 4:00 PM cash close
+- IBKR 3:40 PM ET Forced Liquidation Risk: if lacking ~$50k NQ futures overnight margin, IBKR auto-liquidates near-ATM/ITM expiring NQ options at market around 3:40 PM ET
+- QQQ ETF options (Secondary): 5:30 PM ET exercise cutoff (Pin Risk); 0DTE spreads must be closed pre-close (~$6 friction on $0.50 spread; $16-$20 slippage eats >30% of 3-day $50 gain)
+- Defined-Risk Spread vs 100 Shares: in a $50 QQQ crash, a $20-wide Put Spread loses max $1,000 and allows buying 100 shares at the bottom, whereas 100 shares lose $5,000
+- IBKR Setup: Margin Account required; Non-Professional + CME Level 1 only (cancel NYMEX/Level 2 to avoid extra $20 commission thresholds); Option Chain delete Last, show Bid/Ask/Delta/Position; Portfolio uncheck Group Combo Legs & sort by Instrument; physical SIM + backup phone
+- Small Account ($10k) Margin Reduction: narrow upper spread width (to 100-200 pts) so lower protective put shifts higher, cutting margin from $15k to ~$8.7k
 ## 5. Position Monitoring
-- Aggregate portfolio delta: watch closely beyond ±0.3, high alert beyond ±0.5
-- Single-day sd: monitor 0DTE ATM straddle quote to assess expected move
-- VXN levels: determines whether to extend/contract DTE and whether net selling is viable
-- First short strike breach: crossing triggers immediate vigilance
-- Individual leg delta triggers: short call drops to 0.35, long put reaches 0.35, long call reaches 0.65 -> adjust
-- Theta decay tracking: monitor real-time straddle decay
-- Breakeven migration: shifts with rolls; assess forward +EV rather than sunk cost
-- No-action scenarios: delta near 0 and DTE > 1 week; price rallies against BWB with >3 days remaining
+- Aggregate portfolio delta: general traders watch beyond ±0.3, high alert beyond ±0.5 (Xiaoxiao held -0.30 to -0.83 delta core short call spreads, giving him the hedge to dip-buy crashes; novices must not copy his large short base)
+- Rising 0DTE sd into expiry (100 -> 115 -> 135 with 4h left): signals severe dealer DDH stress
+- Leg delta triggers: upper short call drops to 0.35 (OTM) / BWB upper long put drops to 0.35 / IC upper long call reaches 0.65 / lower short put reaches 0.50-0.65
 ## 6. Adjustments & Defense (Critical Core)
 ### Core Principles
-- 3 legitimate actions: expire worthless, scale into new tranches, roll out in time; no panic liquidating
-- Adjustments carry negative expectancy (~$20 friction); sole purpose is averting max loss
-- Minimize roll frequency: roll only positions facing certain full loss; healthy positions gain nothing from rolls
-- Paying debit to roll != losing money; collecting credit != making money; debits buy higher-expectancy assets
-- Reject stop-losses and profit targets; defined-risk strategies should not use stop-losses
-- "Don't worry where it came from, worry where it's going"
-### Quantitative Triggers
-- Upper short call drops 200 pts below spot -> roll down and out (200 pts strict discipline)
+- 3 directions: expire worthless, scale in, or roll out ("if you never leave the gambling table, the money is never yours")
+- Adjustments carry negative EV (~$20 friction); adjust only to avert max loss or eliminate negative-EV OTM short calls
+### Triggers & Pre-Expiry (~3 Days Left) Review Rules
+- Upper short call drops 150-200 pts OTM (or delta 0.40 prepare / 0.35 standard / 0.30 mandatory) -> roll down & out; waiting until 650-800 pts OTM causes "Double-Sided Losses" (under-earning on drop, losing big on bounce)
 - Spot breaches first short strike by >100 pts -> evaluate; >300 pts -> roll immediately
-- Short call delta reaches 0.40 -> prepare roll; 0.30 -> mandatory roll (baseline 0.35)
-- Short put reaches 0.65 / Long put reaches 0.35 / Long call reaches 0.65 -> adjust
-- 3 days prior to expiration -> split review discipline:
-  - Short Call Spread: mandatory roll out to next week ATM (prevent decaying into deep OTM negative EV)
-  - Pure Short Put Credit Spread: hold through expiration without rolling if strikes unbreached
-- Adjustment cooldown: mandatory 30-minute lock after adjusting to prevent whipsaw fee churn
-### Downside Defense: Rolling Upper Call Spreads
-- Close old spread -> sell next week's ATM call spread (Sell ATM, Buy OTM); configure 4 legs to Net Delta 0
-- Add +1 week DTE per roll (lock higher IV extrinsic)
-- Outward rolls dampen negative gamma, stabilizing the position
-- Roll every 200 pts vs 400 pts: similar net outcome; rolling less saves fees, but waterfall drops leave OTM calls lagging
-- Why roll: index OTM calls have negative EV, roll down to ATM promptly
-### Severe Downside: BWB Discipline vs IC Rescuing Breached Puts (Textbook 6-Leg Roll)
-- Bearish BWB downside breach: defined capped max loss = wing gap (e.g. 200 vs 800 gap = $12k max loss under circuit breaker); accept predefined max loss with dignity, strictly prohibited from executing 6-leg rolls or unbundling into naked risk
-- Iron Condor / Bull Put Spread downside breach (Textbook 6-Leg Roll): buy Classic Butterfly to roll down (6 legs): buy back short put + sell 2 lower puts (delta 0.25-0.30) + buy 1 lowest put
-- Geometric Equal-Width Formula: K_wing = 2*K_body - K_upper (wing width exactly matches upper spread to guarantee Delta 0 without negative theta distortion)
-- Symmetric butterfly (1 sd wide, ~200 pts) has negative delta -> sell next week's deep OTM put spread to balance -> 6 legs Net Delta 0
-- Why butterfly: same expiration (no duration risk) / equal long-short contracts (neutral vega/gamma) / low capital / time allows short put to expire worthless
-- Splitting breached 0DTE delta: decompose 0.60 delta into 0.20-0.30 today + 0.30-0.40 Monday
-- Long ATM calls stalling in flat chop: roll up ~100 pts + buy next-day ATM call spread at Delta 0
-- Defend puts with short horizons (2-5 days), not far months; far months double timing risk
-- Never roll entire breached put spread out to far months in one block (locks in crash loss, spiral of despair)
-- Extreme crash: accept predefined max loss; over-adjusting into steamroller causes destruction
-### Upside Defense: Managing Rallies
-- Bearish BWB has zero upside risk; max loss capped at initial debit; no adjustment needed if DTE > 3 days
-- Deep ITM short call spread: long call delta reaches 0.65 -> close short call spread + buy ATM put spread (Buy 0.50, Sell 0.40) same expiry, Delta 0
-- [Spread core advantage 09/18]: long leg retains rich extrinsic during rallies; selling long leg offsets short losses; buying higher ATM put spread resets breakeven without needing spot to return to original entry; shorting the low and panic-buying the top = retail destruction
-### Dip-Buying with Positive Delta (Method B Standalone Priority)
-- Post-crash IV surge + put skew makes selling deep OTM put spreads positive EV
-- Prioritize Method B (standalone deep OTM put credit spread: Sell 0.15 Put + Buy 0.05 Put, delta +0.04 to +0.05 per tranche, 2-5 days DTE) over Method A (upper spread directional roll)
-- Tranche sizing: +0.04 to +0.05 per tranche; cap aggregate portfolio delta <= +0.20 to +0.30; scale in every 100-200 point drop across different expirations
-### Delta Portfolio Management
-- Avoid non-zero delta adjustments; maintain strict Delta-0 tolerance (|net_Delta| <= 0.06 per unit, fine-tune outer wing strike if needed); accept natural minor delta fluctuations
-- Goal: ensure 4 legs of active roll equal Delta 0 (|net_Delta| <= 0.06), not forcing total account delta to 0
-- IBKR NQ delta displayed is x20; divide by 20 (multiply by 0.05) for true contract delta
-- 0.00x decimals negligible; 0.099 ~= 0.10 is material, shift strikes
-- If delta drifts too negative at troughs: sell deep OTM put spreads to replenish positive delta, don't chase price
-### Classic Mistakes
-- Panic selling at bottoms: worst timing + peak IV crush, vaporizes accounts
-- Chasing rallies: panic-closing calls to sell puts guarantees loss on reversal
-- Rigid 80% profit / 50% stop rules: surrenders last 20% free decay to market makers
-- Unbundling narrow spreads (29200/29100 delta near 0, breaking creates directional exposure)
-- Oversized dip-buying (+0.09 delta in single tranche; single-expiry concentration)
-- Roll execution errors: too close DTE / non-integer strikes / pre-market illiquid hours / non-neutral rolls (-0.60 delta)
-- Allowing free roll to degrade into "horse race" (dragging short call into Friday 9:30 AM cash settlement)
+- Pre-Expiry (~3 Days Left) Rules: ① Roll OTM short calls (delta <= 0.35/0.25) early because index put skew makes holding OTM short calls negative EV (10x explosion on bounce); ② Holding near-ATM into 9:30 AM cash settlement ("running the horse") is mathematically fair (Xiaoxiao rolled early on Tuesday to free up negative delta for Wednesday dip-buying); ③ 1-3 week BWB 3-step check (is spot between short strikes? does delta match today's view? roll upper long put spread if keeping short stance); ④ Unbreached OTM put credit spreads are held to expiry to decay to zero
+### Downside Defense: Rolling Upper Spreads
+- Close old upper spread (call spread or BWB upper put spread) -> sell next week's (or far-month) ATM call spread at 4-leg Delta 0 (or +0.03 to +0.05 delta if dip-buying)
+- Rolling BWB upper put spread into next week's put spread: same strikes = +0.026 to +0.05 delta; strict Delta 0 requires widening new spread
+- Consolidate two separate OTM upper spreads into one far-month ATM call spread via a 6-leg Delta-0 order to save fees
+### Severe Downside: Rescuing Breached Puts & Second-Breach Leg Cancellation
+- Trigger: spot touches/breaches short put (delta 0.50-0.65); execute during an intraday bounce to save intrinsic cost
+- Buy Butterfly or BWB to roll down (6 contracts / 5 legs in IBKR): buy back breached short put + sell 2 lower puts (0.25-0.35 delta) + buy 1 lowest put + sell next-week deep OTM put spread to balance negative delta -> Net Delta 0
+- Wing Width Principle: symmetric butterfly or BWB (wings within reasonable range, ~200-400 pts); equal-width wings are preferred because payoff below the lowest wing at expiry is 0, adding ZERO extra max downside risk beyond the original spread
+- [Core] Reusing Old Long Puts & Second-Breach Automatic Leg Cancellation: on a narrow spread's first breach, existing long put (at 0.30-0.35 delta) serves directly as one of the butterfly legs; on a second breach, the 2 newly sold center puts land directly on your existing 2 long put strikes (28500P/28400P), automatically closing out the old legs without accumulating 10 legs!
+- 3-Stage 0DTE Put Rescue: ① Split 0.60 delta or buy butterfly with ATM Long Call upper wing; ② Wait 2-3 hours for short put decay, then if stalled near 0DTE ATM Call, roll Call up 100 pts + buy Monday ATM Call Spread at Delta 0; ③ After 0DTE expires, split Monday spread into Friday 0.15/0.05 put spread + far-month 0.25/0.15 put spread (0.15/0.05 on far-month is too wide and risky); stop out at 4:55 PM if still ITM
+- Extreme Multi-Day Crash Alternative (Caution): buy upper 0DTE/short OTM Call Spread (+0.20 delta) for violent rebound; convert to IC via 4-leg Delta-0 order once bounced to ATM
+### Upside Defense: Managing Rallies & DTE Correction
+- Rescuing BWB Upper Long Put at 0.35 Delta: ① Buy a higher-strike same-expiry 4-leg BWB using your existing 0.35 Long Put as one of the new Short Put legs to cancel it out; or ② Roll upper put spread out 1 week
+- Rescuing Deep ITM Short Call Spread (Long Call reaches 0.65 delta): close ITM call spread -> buy ATM put spread (0.50/0.40) or sell new ITM call spread (0.60/0.50) at Delta 0; because low IV favors BUYING longer-dated extrinsic, extending DTE by 4-7 days (into next week) is advantageous!
+- Trimming negative delta after rally: roll untested lower put spread up in same expiry with +0.04 to +0.05 delta
+- [Spread Advantage 09/18]: monetize residual extrinsic on deep ITM long leg to finance higher ATM put spread, resetting breakeven to new short strike
+### Dip-Buying with Positive Delta
+- [Rule #1] Only accounts with a strong negative-delta short base are qualified to dip-buy crashes; long-stock accounts dip-buying with put spreads accelerate liquidation!
+- Method 1 (Recommended when upper spread is OTM / for novices): tilt the 4-leg upper spread roll to +0.03 to +0.07 positive delta (adds zero new downside breach risk)
+- Method 2 (Xiaoxiao's daily favorite): sell standalone 1-5 day (often 1-3 day) deep OTM put credit spread (+0.04 to +0.05 delta)
+- Why separate 4-leg roll + 2-leg put spread instead of 6-leg order: directional combos require a price dip to fill, whereas Delta-0 combos only require liquidity
+- Stagger every 100-200 pt drop across distinct expirations; cap general account positive delta <= 0.20-0.30
+### ZB (30Y Treasury) Breached Naked Put Defense
+- 1-to-2 Staggered 3-Leg Delta-0 Roll: buy back 1 old put (108p) + sell 2 lower puts (107p, 1 near-term + 1 out 2-4 weeks); take delivery at 107 and sell ATM Strangle
 ## 7. Order Execution Details
-- Delta-0 execution: post limit at bid -> modify to mid - $0.25 -> step up by +$0.25 until filled; adjust strikes if delta non-zero
-- Wide spreads (> $5): post at bid to test market -> adjust to mid - $0.25 -> step up
-- Closing: limit at mid + $0.02 -> step down by -$0.01; illiquid underlyings start at mid + $0.30+
-- Liquidity test: ATM spread width 2-3 good / 4 fair / 6 poor; avoid underlyings lacking two-decimal quotes
-- Stick to integer strikes (deepest liquidity)
-- Avoid forcing fills in overnight/weekend illiquid hours
-- Single-day duration risk: prioritize matching expirations across defensive legs
-- Disperse expirations: multiple 0DTE put tranches concentrate tail risk
-## 8. Greeks & Pricing Foundations
-- sd maps 1:1 with IV (ATM straddle quote)
-- Irrelevance of Vega: chicken-and-egg dilemma; focus on Theta and Gamma
-- Theta-Gamma trade-off: positive theta mandates negative gamma (inverted bowl curve)
-- Charm (dDelta/dt): short OTM puts have negative charm, decaying to delta 0 = synthetic short hedge
-- V(S, t, sigma) 4D surface; broker P&L charts are 2D static slices
-- Deep OTM asymmetry: 99% earn 1%, 1% lose 10-20%; strictly avoid
-- Skew: index put skew (crash protection demand) vs speculative stock call skew (retail FOMO)
-- Put-Call Parity is foundation for all conversions between BWB and Iron Condor
-- Market makers are algorithms; 80% stock volume driven by option hedging (tail wags dog)
-- Zero-sum truth: traders running negative expectancy fund structural option sellers
-- GEX / gamma squeeze: no retail alpha; rallies driven by capital buying calls, not dealer short-covering
+- Delta-0 execution: post at bid -> modify to mid - $0.25 (or mid - $0.50) -> step up +$0.25 every 2-5 seconds; shift strike if delta not 0.0xx
+- Never leave a high-credit limit order resting for a fill (Adverse Selection): filling later means spot moved sharply and combo is no longer Delta 0 at fill!
+- Reuse & cancel existing legs via Put-Call Parity to save 2 legs of fees and slippage
+## 8. Greeks, Pricing & Microstructure
+- Path-Independence (Immediacy): 0DTE BWB dropping 1sd in 1 minute shows immediate unrealized loss from negative Gamma before Theta decays over the day
+- Vega irrelevance vs Vanna Short-Covering Squeeze (post-event IV crush collapses put delta, forcing dealers to buy back short futures and sparking vertical rallies)
+- Symmetric straddling vertical spreads (0.60/0.40) have 0 Gamma and 0 Theta at entry center
+- Calculus of IBKR P&L Graphs: Graph 1 is V(S), Delta is dV/dS, Gamma is d²V/dS²—only Graph 1 matters (set 2-4 days ahead)
+- Quadruple Witching 8:00-9:30 AM "杀期权 (Max Pain Pinning)" toward peak Call OI; debunking crypto perpetual 3% stock arbitrage (stale Last price + wide bid-ask)
 ## 9. Accounting & Bookkeeping
-- Maintain two separate ledgers: Net Premium Cashflow vs Closed Realized / Open Unrealized P&L; never conflate
-- Multi-roll accounting: downward roll realizes profit; lower put expiration realizes profit; unrealized loss on ITM call spread accumulates until rolled up to ATM long put spread
-## 10. Macro Assets & Cash Management
-- Japanese Yen: short USD/JPY spot or sell JPY futures naked puts; BOJ intervention 4 criteria; IBKR conversion $2 fee; 09/18 live: short USD/JPY spot + sell JPY futures ATM puts (2-3 weeks)
-- Forex execution: tight spreads, direct market orders, cap tranches at $30k notional
-- Long Treasuries: sell ZB OTM puts near major support (108 handle); avoid deep OTM
-- Cash equivalents: hold JPY for appreciation / SPX Box Spreads (+25-50 bps over risk-free, large accounts) / SGOV
-- Long leverage: buy NQ/MNQ futures directly instead of long calls
-- 2x leveraged ETFs: daily rebalancing guarantees buying high and selling low; volatility decay erodes capital in drawdowns
+- Two separate ledgers: Net Cashflow vs Realized/Unrealized P&L
+- Downward rolls & expiring puts realize profits; ITM call spread unrealized losses accumulate until rolled up into ATM long put spread
+## 10. Macro Assets, Sectors & Cash Management
+- Japanese Yen (Target USD/JPY 110): short USD.JPY spot + sell JPY futures puts; 4 BOJ intervention criteria; FX market orders must be >= $30k USD (or ~$28k min) to avoid flat $3 fee drag
+- Long Treasuries (ZB): sell OTM puts at 107/108 support; take delivery at 107 + sell ATM Strangle
+- Sector & Catalyst Analysis: DRAM (MU/SNDK) shortage likened to silver bubble; June-end institutional Window Dressing; SK Hynix US ADR vs Korea cross-market dumping; ZQF7 Fed Funds catalyst momentum
+- Cash & Leverage: JPY / SPX Box Spreads / SGOV; use NQ futures instead of long calls; avoid 2x/3x ETFs (daily rebalancing buys high, sells low)
 ## 11. Learning Roadmap & Curated Resources
-- Paper trade first: master P&L graphs and Delta/Theta/Gamma dynamics
-- Pre-mortem every complex adjustment before live execution
-- Information diet: financial media have conflicts of interest; trust only raw news and independent multi-dimensional traders
-- Resource 1: Tom Sosnoff (lossdog livestream, YouTube @lossdog + lossdog.com, Mon-Thu 9:30-11am ET, top-tier veteran, @Tomunderwater, "some moves are indefensible")
-- Resource 2: Tim Knight (tastylive Trading Charts, Mon-Fri 3:15pm ET, aggressive directional charts with strict stops, deeply bearish Nasdaq; written: slopeofhope.com 2005-present 30k+ posts, @SlopeOfHope, perma-bear)
-- Real-time news: Jin10 (jin10.com, instant alerts within 60 seconds)
-- Open IBKR immediately (QQQ options impose 8x higher transaction drag)
+- Paper trade or use a $10k small demo account first; pre-mortem all adjustments
+- Conflict-free sources: real-time news (Jin10) & independent self-funded multi-dimensional option traders
+- Resource 1: Tom Sosnoff (YouTube lossdog, Mon-Thu open 1.5h livestream; "some moves are indefensible")
+- Resource 2: Tim Knight (YouTube tastylive, Mon-Fri 3:00 PM 30m livestream; nimble directional charts with strict stops, deeply bearish Nasdaq)
+- Open IBKR for NQ (QQQ imposes 8x higher transaction friction)
 </script>
 </div>
 </body>

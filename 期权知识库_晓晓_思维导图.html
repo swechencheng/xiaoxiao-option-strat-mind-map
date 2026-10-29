@@ -16,212 +16,171 @@ body { background: #f5f5f7; font-family: -apple-system, "PingFang SC", "Microsof
 # 晓晓期权知识库（354案例穷尽归纳，至9/18晓晓离群）
 ## 〇 交易哲学总结
 ### 三句话
-- 只做「亏损有上限」策略（断翅蝴蝶/铁鹰），厌恶无上限亏损（裸卖单腿/wide strangle/put ratio）
-- 只做 delta 0，绝不赌方向（不猜顶猜底），靠 theta 等希腊字母盈利
-- 比谁犯错更少，不追理论最优；只看当下仓位未来期望，不看历史成本
+- 只做「亏损有上限」策略（断翅蝴蝶/铁鹰/垂直价差），厌恶无上限亏损（裸卖单腿/wide strangle/put ratio）
+- 只做 delta 0（或以 delta 0 调仓），绝不猜顶猜底赌方向，靠 theta 与 skew 等非 delta 希腊字母盈利
+- 比谁犯错更少；坚信「don't worry where it came from, worry where it's going」与巴菲特「隔夜现金法则」（只看未来+EV，不看沉没成本）
 ### 核心原则
-- 长期看空纳指20%（QQQ看跌至600）
-- 【9/18观点演变】9/11明言「死多头」反对极端熊派（PE/PD暴雷→降息），但仍持强势做空short call spread+低位抄底，非转看多纳指
-- 期权本质：利用 delta 之外的一整套希腊字母
+- 长期看空纳指20%（QQQ看跌至600；因无风险利率5%/年，纳指横盘4年即等于实质下跌20%）
+- 【9/11观点真实语境】讨论美债时称「死多头」（PE/PD及企业债11%高息快暴雷，热钱将回流无风险5%美债），对纳指仍持深实值空头+暴跌卖put抄底，绝非转看多纳指
+- 期权本质：利用 delta 之外的一整套希腊字母（theta/vega/gamma/charm/vanna）
 - 盈利结构：delta 占30-50%，其他希腊字母占70-50%
-- credit 不是你的钱（账户多了 liability）；期权非免死金牌
+- credit 不是白赚的钱（账户多了 liability）；「融化中的冰激凌车」比喻（卖方锁定买方错失的机会成本）
 - theta 不是白赚的（正theta必负gamma）
 - 中性真义：涨了愿做空、跌了愿做多
-- Delta0容忍度：实盘前两位小数0.0即合格(|net_delta|<0.10，理想<=0.06)；偏离>0.06微调最外翼strike压回
+- 开仓Delta0实盘口径：IBKR下单页（已×20乘数）显示前两位为0.0（如0.037/-0.076/+0.080）即合格；偏离到0.1左右则挪一档strike微调
 ### 核心禁忌（穷尽）
-- 不裸卖单腿 put/call
+- 不裸卖单腿 put/call（批判传统Wheel策略暴跌接货后卖不出原strike call）
 - 不做 wide strangle；低IV裸卖=推土机前捡硬币
 - 不做 put ratio（1:2，下方风险无限）
 - 不卖指数的 otm call（put skew下极便宜，负期望）；要卖只卖 atm call
-- 不做 diagonal/到期日差距大的价差；高IV最多敢1-2天差距
+- 不做大跨度 diagonal；高IV最多只敢1-2天差距（如隔日末日铁鹰/断翅蝴蝶diagonal）
 - 不做 reverse diagonal（买近期卖远期）
-- 不做 leap call / PMCC（超远期extrinsic不可预测）
-- 不在低IV+长到期日做卖方（暴跌+IV暴涨双重暴击）
-- 不交易 itm 期权（delta 0.7+ 流动性差）
+- 不做 leap call / PMCC（超远期extrinsic不可预测，且宽滑点入场即亏10%）
+- 不在低IV+长到期日做净卖方（暴跌+IV暴涨双重暴击）
+- 不交易 deep itm 期权（delta 0.7+ 流动性差）
 - 不交易 MNQ（损耗是NQ 10倍）
 - 不交易到期日>90天的期权
-- 不用 futu / robinhood（PFOF成交差，一单亏20多刀）
+- 不用 futu / robinhood（PFOF成交差）；不用Cash Account（除Covered Call外连1:1垂直价差都禁做，必须用Margin账户）
 - 不用AI编答案/网上期权计算器
-- 不轻易止损止盈（猜顶猜底）
+- 不机械止损止盈（止盈80%=白送最后20%免费时间价值）
 - 不把风险集中同一到期日
-- 新手别开第二组仓（应把原spread变宽、腿重合省手续费）
+- 新手别乱开独立同向仓位（应把原spread变宽、或让新单与旧腿重合抵消省手续费）
 - 不追涨杀跌、不低位杀跌后追涨
-- 不做个股单腿/多腿（call skew+低股价）
-- 不猜顶猜底不预测短期方向
+- 不做低价个股单腿/多腿（call skew+手续费不值当）
+- 多头账户（已持纳指正股/多头）严禁在暴跌时卖Put Spread抄底（无负delta底仓保护会加速腰斩）
+- 不要花$4提前平深虚值Short Put去「释放保证金」（保证金本就是自己的钱）
 ## 一 市场环境 → 开仓策略
 ### 核心指标
-- sd与今日1sd区间：atm straddle报价(call+put mid之和)；今日1sd区间=[Spot-1sd, Spot+1sd]
+- sd（单日标准差）：某到期日atm straddle报价（atm call + atm put价格之和）；隔夜sd（至9:30开盘约100点）vs 全天sd（至4:00收盘）
 - VXN：30天纳指IV（不能概括单日，单日看单日sd）
 - IVR：<20时买1-3月long call「也许有利」
-- sd倍数语汇（3sd/7sd跌幅）
+- sd倍数语汇：3sd/7sd跌幅（夜盘/节假日流动性枯竭时做市商DDH易引发>3sd行情）
 ### 环境→策略映射
-- 暴跌/恐慌+高VXN：做空断翅蝴蝶（强制0dte/下午1dte）delta0；禁拉长多天期
-- 高VXN/高波动：拉长1-3周；负delta铁鹰（call0.5/0.2+put0.12/0.05净-0.2）
-- 低VXN/低波动：风险最大，买方赌小概率、卖方推土机捡硬币；极低IV做空断翅蝴蝶也危险；不做等机会
+- 暴跌/恐慌+高VXN：首选做空方向断翅蝴蝶（0dte/1dte 或 1-3周）delta0；亦可分步建仓（收盘先卖上方ATM Call Spread，夜盘暴跌IV飙升再补下方宽Put Spread配平）
+- 高VXN/猴市宽幅震荡（频繁3sd）：拉长到1-3周（8-20 DTE）做0.5/0.4/0.15/0.05断翅蝴蝶或看空铁鹰（NQ日均正Theta +$70~$178）
+- 低VXN/单日sd极低：风险最大；单日sd过低时不推荐末日BWB（下方strike太近易被击穿）；要么等机会，要么盯盘做末日铁鹰或拉长1-3周BWB
 - 区间震荡/中性：中性铁鹰（delta0）
-- 大跌后（被迫看多）：铁鹰（1-2周）；卖otm put spread拿正delta(0.3/0.1)
-- 大涨后：保持看空，做空断翅蝴蝶/负delta铁鹰
-- 到期周/四巫日/季度结算日：波动已price in；铁鹰跨周开下周五(1-2周)，避<=3DTE负gamma
+- 大跌后（被迫短期看多）：铁鹰（1-2周，如0.5/0.35+0.25/0.1）；或卖deep otm put spread拿正delta
+- 大涨后（超买/空头回补）：保持看空，做空断翅蝴蝶或看空铁鹰
+- 到期周/四巫日/季度结算日：波动已price in，做有上限亏损策略，常选下周五到期
 - 财报前/当天：50/50赌博，不猜方向
-- 猴市/极端行情频发：有上限+拉长到期日+不做末日+deep otm下方(0.1-0.15)
 - 日元/长债：看多时卖裸put（1月，delta0.3-0.5）
 ## 二 核心策略 leg 构成
 ### 做空方向断翅蝴蝶（标志性）
-- 构成：买1 delta0.5 put + 卖2 delta0.3(或0.4) put + 买1 delta0.1(或0.05) put
-- 标准组合 0.5/0.4/0.15/0.05（因稳定）；也可0.5/0.3/0.3/0.1等，总delta0即可
-- 到期日强制0dte(上午)或1dte(下午/尾盘)；只有0dte/1dte才有显著时间衰减差异盈利，14天两翼抵消无效
-- delta0、debit入场、theta正、vega平衡
-- 0dte损益：跌9刀翻6倍、不动翻2倍、涨5刀亏50%
-- 最大亏损=翅膀宽度差（下9+再下15=差6刀）；QQQ 600刀/NQ 4800刀
-- 断翅宽度常见200比800，极端熔断亏1.2万刀
-- 为何不用经典蝴蝶（等宽）：卖2下移→delta降变负+credit变少→负theta+方向性
+- 结构1（3行权价 1:2:1，常用于0dte）：买1 delta0.5 put + 卖2 delta0.3 put + 买1 delta0.1 put
+- 结构2（4行权价拆分式 1:1:1:1，最常用标准版 0.5/0.4/0.15/0.05）：买上方 0.5/0.4 put spread + 卖下方 0.15/0.05 put spread
+- 上下翼比例铁律：总delta0，且下方卖空翼宽度必须是上方买入翼宽度的2倍以上（如上200-300点、下600-1000点）
+- 为何必为小Debit入场且大涨几乎不亏：下方宽put spread受指数put skew加持够贵，上涨时下方盈利大幅抵消上方损耗；反之看多Call BWB因上方OTM call太便宜而不可行
+- 到期日：高VXN/单日sd充足时可选0dte/1dte（放大时间损耗差距）；猴市/稳健持仓选1-3周（8-28 DTE，日均Theta $50-$178，持有>=3天）；不宜选45天超远期
+- 0dte损益（入场debit 0.92）：跌9刀涨到5.49（6倍）、不动涨到1.99（2倍）、涨5刀跌到0.48（-50%）
+- 最大亏损=两翼宽度差（如200比800差600点，极端熔断亏1.2万刀）；0dte跌到最深strike附近提前止损可抢回$2-3外在价值
+- 为何不用经典蝴蝶（等宽）：卖2下移→必带负delta+变负theta
 ### 铁鹰 Iron Condor
-- 构成：卖call spread(短0.5/长0.4) + 卖put spread(短0.15/长0.05)
-- credit入场、净卖出赚时间损耗、有上限亏损
-- 到期日强制1-3周(7-14天，>=7天)；禁<=3DTE末日陷阱(负gamma暴击)
-- 指数上：卖含atm call(控上方)+卖含otm put(0.1-0.3，利用put skew)
-- 中性 0.5/0.3+0.3/0.1；看空 0.5/0.4+0.15/0.05；负delta 0.5/0.2+0.12/0.05；正delta 0.5/0.4+0.3/0.1；1-2周 0.5/0.35+0.25/0.1
-- 与断翅蝴蝶 put-call parity 对等，差别在流动性（避itm）
-- 铁鹰横盘盈利更高；断翅蝴蝶跌到第一short strike附近才最大化盈利
+- 构成：卖call spread(短0.5/长0.4) + 卖put spread(短0.15/长0.05)，credit入场，净delta0
+- 到期日：高IV选长到期日（1-3周），低IV或能盯盘可选末日（0dte/1dte末日铁鹰）
+- 上下翼比例：卖含atm call的call spread + 卖含otm put(0.1-0.3)的put spread，下方宽度须为上方2倍以上
+- 变体：中性(0.5/0.3+0.3/0.1)；看空标准版(0.5/0.4+0.15/0.05)；1-2周(0.5/0.35+0.25/0.1)；正delta抄底(0.5/0.4+0.3/0.1)
+- 关于「-0.2 delta铁鹰」澄清：严禁入场直接开-0.2 delta赌方向（等于裸空170股QQQ）；实盘仅见于分步建仓或历史深实值底仓配多组put
+- 与断翅蝴蝶 put-call parity 完全对等：仅因避开交易流动性差的ITM call spread(0.6/0.5)而改买ATM put spread(0.5/0.4)
+- 铁鹰vs断翅蝴蝶：铁鹰横盘盈利更高（0dte持仓3小时后开始分化），但暴跌时下方put亏损可能远超上方盈利
 ### put credit spread 抄底
-- 构成：卖delta0.15(或0.13/0.1)put + 买delta0.05(或0.09/0.05)put
-- 单次净delta 0.04-0.05；到期日2-5天（新手5天/本周五）
-- 高VXN可拉长1-2周甚至3周；VXN不高不卖2周以上put
-- 抄底逻辑：大跌后IV升+put skew→otm put变贵，卖deep otm put spread正期望
-- 越跌越抄，每跌100-200点抄0.04-0.05，每次不同到期日
-- 不能用于接货
+- 构成：卖delta0.15(或0.13/0.10)put + 买delta0.05(或0.09/0.05)put
+- 单次净delta 0.04-0.05；到期日1-5天（晓晓常选1-3天，新手推荐5天/本周五；高VXN可1-2周或与上方同到期日）
+- 抄底逻辑：大跌后IV升+put skew→otm put变贵，阴跌不破位也能归零赚钱，暴跌击穿可用蝴蝶救
+- 越跌越抄：每跌100-200点抄一次0.04-0.05，每次必须选不同到期日分散风险；绝不用于接货
 ### covered call / cash-secured put
-- 有现金：买100股+卖atm call(1月)
-- 没现金：卖裸put(atm，1-2月)
-- put-call parity：买100股+卖call=卖put
-- 护盘：卖1月atm call=-0.5delta
-### 经典蝴蝶（等宽）
-- 两侧等宽，delta0不可能+负theta，赌波动率，不推荐
-### put ratio（反面）
-- 买1 delta0.5+卖2 delta0.25，净卖下方无限；7sd跌时亏25刀vs断翅亏4-5刀
+- 有现金：买100股+卖atm call(1月)；没现金：卖裸put(atm，1-2月)
+- 4%隐含贷款利率：不出本金做多的期权（如买Call）隐性支付4%年化利息；买100股+卖ATM Call（或卖Put）则是收取这4%利息
+- 护盘：卖1月atm call=-0.5delta（减仓50%）；重仓杠杆ETF（如TQQQ）对冲应直接减仓正股
+### 经典蝴蝶（等宽）与 Put Ratio（反面）
+- 经典蝴蝶：两侧等宽必带负delta+负theta，不作开仓，仅作救被击穿short put的工具
+- Put Ratio(1:2)：买1个0.5+卖2个0.25，下方风险无限，7sd暴跌亏25刀vs断翅亏4-5刀
 ### 裸卖put（长债/日元例外）
-- 看多ZB/JPY卖裸put，约1月，delta0.3-0.5
-### diagonal（慎用/反面）
-- 到期日差距大风险极大；高IV买远期是大忌；低IV买远卖近才可行
-### leap/PMCC（反面）
-- IV巅峰买最远extrinsic，涨幅被IV下降吃掉；做多杠杆用期货
+- 看多ZB/JPY卖裸put（约1月，delta0.3-0.5）；教训：JPY 0.0063裸put在到期前一天遇3%(7sd)暴涨导致delta清零而踏空后续涨幅
+### diagonal 与 LEAPS/PMCC（反面及解套法）
+- 高IV下仅接受1日跨期的末日铁鹰/断翅蝴蝶diagonal（卖0DTE+买1DTE保护腿）
+- 误买超远期无流动性LEAPS Spread（如2027年SNDK）被套解救法：切勿立刻割肉再亏10%滑点，应卖出3个月到期OTM Call Spread配平总Delta0锁住净值，或拿1年等流动性恢复
 ## 三 到期日选择逻辑
-- 0dte/末日：只有做空断翅蝴蝶显著盈利；末日铁鹰theta极高但负gamma风险最大化
-- 当天/次日：上午入场选当日、下午晚上选次日
-- 1-3周：市场不尊重sd时拉长、多吃跌幅、留调整空间
-- 高VXN拉长、低VXN只做短期/末日
-- 选周五（流动性最好）；避开当日新出的到期日
-- 不选>90天（流动性极差bid-ask巨宽）
-- 拉长时机：大跌VXN升锁高IV extrinsic；上涨IV降不可锁长extrinsic
-- 期货季度结算：9月NQ期货/期权开盘9:30现金结算；第二链12月期货收盘4点到期
+- 0dte/1dte：高VXN/sd充足时做0dte断翅蝴蝶；上午入场选当日，下午/晚上选次日
+- 0dte止盈与亚洲时区自动单：美东1:00-3:00 PM（赚50%-75%最大利润）平仓；亚洲时区不盯盘可设2:10 PM自动平仓单
+- 1-3周：高VXN或频繁3sd猴市时拉长到1-3周做断翅蝴蝶或铁鹰，留足调整空间
+- 上涨低IV时的到期日辨析：低IV不可拉长到期日去「卖出」extrinsic，但非常适合拉长到期日去「买入」extrinsic（如救上方ITM call spread时买更长到期日的0.5/0.4 ATM put spread更有利）
+- 季度期货结算与跨季+200~300点基差：当季AM期权早9:30现金结算（9:30后保证金立即释放）；下一季NQ期货因4%年化利率（每季1%）天然高出200-300点，这是做空NQ的天然顺风
 ## 四 标的与工具
-- NQ首选：×20一手57-60万刀，QQQ的8倍，24小时，准点4点结算
-- QQQ备选：滞后结算（4:15可交易、买家5:30可行权）损耗高8倍
-- MNQ禁用：×2、流动性差、损耗10倍
-- SPX/NDX：SPX 1手=10手SPY；季度指数前一天4:15停、次日9:30现金结算如赌马；NDX一手300万不推荐
-- 标普杂、纳指纯，只做纳指
-- 个股：仅流动性好高股价；700刀QQQ都嫌麻烦；热门股call skew卖otm call极危
-- 券商：IBKR（无PFOF、可搜NQ）；开通期货+期货期权+CME Level1
-- 保证金：有上限亏损=最大亏损；NQ 5-10% vs QQQ 20-30%；不够时上移put spread或收窄
-- 手续费：期权约1刀/手；每次交易损耗约20刀（滑点为主）
+- NQ首选：×20一手57-60万刀，QQQ的8倍，省70%+手续费；23小时交易（仅美东5:00-6:00 PM停盘1小时）；4:00 PM准点现金结算
+- NQ 3:40 PM强平风险：若账户不足$50k期货隔夜保证金，末日NQ期权在3:40 PM处于实值附近会被IBKR市价自动强平
+- QQQ备选：滞后实物交割（4:15停交易、买方5:30前可行权/弃权，存在Pin Risk），末日spread须收盘前平仓（平$0.50宽spread多付~$6摩擦，3天赚$50滑点吃掉>30%）
+- 有上限期权vs持100股正股：QQQ暴跌50刀时，20刀宽Put Spread最多亏$1000且能在底部从容买正股，而持100股正股浮亏$5000被套牢
+- 券商IBKR关键设置：必须用Margin账户；申请Non-Professional并仅订CME Level 1（退订NYMEX等防多交$20佣金门槛）；期权链删掉Last列、显示Bid/Ask/Delta/Position；持仓页取消勾选Group Combo Legs并按Instrument排序；配实体SIM卡+备用机防失联
+- 小资金（1万刀账户）降保证金调法：将上方Call/Put Spread宽度收窄（如改为100-200点宽），下方保护腿即可大幅上提，将保证金从$1.5w压到$8.7k
 ## 五 跟踪持仓
-- 总组合delta：超±0.3警惕、超±0.5格外警惕
-- 单日sd；VXN高低
-- 第一short strike是否被击穿
-- 腿delta阈值：short call 0.35、long put 0.35、long call 0.65
-- theta每秒流失（看末日sd升降）
-- 盈亏平衡点随roll偏移，看未来EV非历史成本
-- 无需调整情形：delta0且到期>1周；上涨断翅蝴蝶无上方风险（到期前3天才考虑）
+- 总组合delta：一般交易者超±0.3警惕、超±0.5格外警惕（晓晓本人因持-0.30至-0.83 delta深实值空头底仓，故能在暴跌时大举抄底，新手勿盲目模仿其大额底仓）
+- 单日sd变化：若临近交割剩几小时末日sd不降反升（100→115→135），代表做市商正承受极大DDH对冲压力
+- 第一short strike是否被击穿（1-3周BWB跌破第一short put即考虑展期上方spread）
+- 各腿delta阈值：上方short call跌到0.35(otm) / BWB上方long put跌到0.35 / 铁鹰上方long call涨到0.65 / 下方short put触及0.50至0.65
+- 无需调整情形：delta0且到期>1周；上涨时BWB若不想追空则到期前3天再考虑是否展期上方long put spread
 ## 六 后续处理/调整（重点）
 ### 核心理念
-- 三选项：到期归零/加新仓/向后roll；无平仓离场概念
-- 调整必负期望（约20刀损耗），只为救必亏仓位
-- 尽量少roll；roll拿debit≠亏、拿credit≠赚
-- 拒绝止损止盈；有上限亏损策略不该止损
-- dont worry where from, worry where going
-### 触发阈值（时间点）
-- 上方short call otm跌200点→roll；200是稳定纪律
-- 跌破第一short strike>100点考虑、>300点立刻
-- short call delta 0.4开始roll、0.3必须roll（参照0.35）
-- short put 0.65 / long put 0.35 / long call 0.65→处理
-- 到期前3天处置分拆：含short call必须强制roll后展一周避负gamma(must级，防跑马)；纯put spread持有到期归零(watch级)
-- 调仓冷却锁：两次调仓至少间隔30分钟，防频繁反向磨损
-### 下跌：上方spread的roll
-- 平原spread→卖下一周atm call spread（卖atm买otm），4腿roll delta0
-- 每次roll向后加一周（锁高IV）
-- 越往后roll负gamma越低越不需再roll
-- 每跌200点roll一次vs一次400点：差别不大，少roll省损耗但极端行情吃不饱跌幅
-- 为何roll：指数卖otm call负期望，尽快roll到atm
-### 继续跌：下方short put救法（教科书）
-- 普通铁鹰/put spread被击穿：买蝴蝶向下roll(6腿，回补原有+卖2更下+买1最下，两翼严格几何等宽K_wing=2*K_body-K_upper)+卖下周deep otm put spread平衡→6腿delta0
-- 断翅蝴蝶(BWB)被击穿：最大亏损封顶(宽度差)，晓晓纪律：接受封顶亏损持有到期/整组止损，严禁拆单6腿蝴蝶救
-- 为何蝴蝶：同到期日无多一天风险/买卖数量同vega gamma小/成本低/耗到归零不亏
-- 末日被击穿：0.6delta拆成末日0.2-0.3+周一0.3-0.4
-- 买atm call横盘：向上roll100点+买次日atm call spread组delta0
-- 救put用短到期日(2-5天)非长到期日（长到期多一天定成败风险翻倍）
-- 坚决不roll整个spread到远月（坐实亏损螺旋下跌）
-- 极端行情：接受最大亏损，roll越多被推土机推越惨
-### 大涨：上方风险
-- 断翅蝴蝶无上方风险，上涨且到期>3天不需调整
-- 长期itm short call spread：long call delta0.65→平short call spread+买atm put spread(买0.5卖0.4)同到期日delta0
-- 【spread核心9/18】卖long leg入账extrinsic抵消做空亏损；买atm put spread在更高价继续做空，breakeven远优于裸空；低位做空涨起追涨止损=韭菜
-### 抄底正delta
-- 大跌后卖deep otm put spread抄底正期望
-- 抄底方式选择：坚决反对方式一(在roll组合带偏差)；严格推荐方式二(独立开仓2-5天deep otm put spread，单组净delta0.04-0.05，总组合delta<=0.2-0.3)
-- 单次0.04-0.05；大抄0.07-0.1；每跌100-200点抄一次不同到期日
-### delta管理
-- 一般不做非delta0调整；接受市场给delta
-- 目标是roll的4腿delta0非账户delta0
-- NQ界面delta是×20后值；/20换算（×5/100）
-- 第三位0.0xx可忽略，0.099≈0.1有影响可调一格
-- delta偏离：低位卖deep otm put补正delta不追涨
+- 三方向：到期归零/加新仓/向后roll（「若永远不下赌桌，赚的钱永远不是你的」悖论）
+- 调整必负期望（约20刀损耗），只为救必亏或已变负期望的仓位；尽量少roll
+- roll拿debit≠亏、拿credit≠赚；don't worry where from, worry where going
+### 触发阈值与到期前3天检查规则
+- 上方short call otm跌破150-200点（或delta到0.4开始、0.35标准、0.3必须）→向下向后roll；若拖到OTM 650-800点才roll会导致「下跌少赚、反弹多亏」的两头亏
+- 跌破第一short strike>100点考虑、>300点立刻调整
+- 到期前3天检查：①上方OTM short call（delta<=0.35/0.25）因put skew持有是负期望（反弹翻10倍），必须提前roll到下周ATM；②近ATM期权进季结「跑马」本质公平（晓晓提前roll是为腾出负delta在暴跌时抄底）；③1-3周BWB三步检查（现价是否在两short strike内、delta是否符合当日方向判断、上方long put spread是否展期续命防白白归零）；④下方OTM put spread只要未被击穿就持有到期归零，被击穿则拿蝴蝶救
+### 下跌：上方spread的向下向后roll
+- 平原上方spread（旧call spread或BWB上方long put spread）→卖下一周（或远月）atm call spread，使4腿roll本身delta0（或带+0.03~+0.05正delta抄底）
+- 若BWB上方put spread展期为下周put spread：保持同strike自然带+0.026~+0.05正delta；若要严格delta0则需加宽新spread
+- 每次roll向后加一周（锁高IV，越往后负gamma越低）；若有两组旧上方spread可用6腿单合并滚入远月省手续费
+### 继续跌：下方short put被击穿的救法（教科书与二次销腿）
+- 触发：跌破或触及short put（delta 0.50-0.65），尽量趁盘中反弹时roll以节省内在价值成本
+- 买蝴蝶或断翅蝴蝶向下roll（口头6腿/IBKR显示5腿）：买回已有short put + 卖2个更下put(delta 0.25-0.35) + 买1个最下put + 卖下周deep otm put spread配平负delta→总delta0
+- 蝴蝶两翼宽度原则：可用等宽蝴蝶或断翅蝴蝶（只要两侧宽度别差太多，约200-400点）；推荐等宽是因为到期穿透最下翼时净赔付为0，绝不在原spread之外增加任何新的下方最大风险
+- 【核心】复用旧Long Put与二次被击穿「自动销腿机制」：窄spread首次被击穿时原有long put常正好在0.30-0.35可直接作蝴蝶腿；宽spread被二次击穿再买蝴蝶时，新蝴蝶中间卖出的2张put正好选在原有的2张long put行权价上，直接把旧腿平仓销掉，绝不会无限累加腿数！
+- 0DTE被击穿三阶段救援：①拆delta或买带ATM Call上翼的蝴蝶；②先等2-3小时让short put衰减，若股价在0DTE ATM Call横盘则上移100点+买次日ATM Call Spread组delta0；③0DTE过期后拆成周五0.15/0.05 put spread + 远月0.25/0.15 put spread（远月选0.15/0.05太宽风险过大）；最后2小时无调整空间，耗到4:55 PM仍ITM则止损平仓
+- 极端连跌特殊救法（慎用）：买上方末日/短期OTM Call Spread（+0.20 delta）博暴力反弹，反弹至ATM后平仓并卖2-5天deep otm put spread一步转成铁鹰
+- 极端单日7sd崩盘（0dte跌穿最下翼）：接受封顶最大亏损或提前止损抢回$2-3残值，不把整个被击穿spread直接平掉滚去远月
+### 大涨：上方风险与修正
+- BWB上方Long Put跌到0.35 delta的两种救法：①同到期日向高处买新4腿BWB，将手里旧0.35 Long Put设为新BWB的其中一条Short Put直接平掉；②向后展期一周
+- 铁鹰上方Long Call涨到0.65 delta：平掉ITM short call spread → 买ATM put spread(0.5/0.4)或卖新ITM call spread，且因低IV适合「买入」更长extrinsic，向后拉长4-7天（滚到下一周）更有利！
+- 上涨后若想部分削减铁鹰负delta：平掉下方旧put spread并在同到期日上移卖出更高strike的新put spread（配+0.04~+0.05正delta）
+- 【Spread做空核心优势9/18】大涨时平掉long leg入账残余extrinsic抵消亏损，并在更高位买ATM put spread继续做空，无需跌回原入场价即可回本
+### 抄底正delta与先决条件
+- 【第一铁律】只有持有强力负delta空头底仓的人才有资格在暴跌时抄底；多头账户（持正股/多头）在暴跌时卖put spread抄底会加速腰斩！
+- 方式一（推荐尤其新手/上方已OTM时）：在4腿向下roll上方spread时带+0.03~+0.07正delta（不增加下方破位风险）
+- 方式二（晓晓日常偏好）：单独卖1-5天（常选1-3天）deep otm put spread（净delta 0.04-0.05，阴跌也归零赚钱）
+- 为什么不把4腿roll和2腿新put拼成6腿单：有方向组合需等股价dip配合才能成交，而Delta0组合只需做市商流动性支持，必须拆成4腿+2腿分开挂单
+- 尺度与分散：每跌100-200点抄一次0.04-0.05，每次必须选不同到期日，一般账户总正delta控制在0.2-0.3内
+### 长债（ZB）裸Put被击穿救法
+- 1展2跨期3腿Delta0 Roll：买回1张旧put（如108p），卖出2张107p（1张当期+1张2-4周后）；若跌破107则接盘期货并卖ATM Strangle
 ### 经典错误示范
-- 低位杀跌割肉：赌方向+双层负期望，账户清零快
-- 暴涨后追涨：高位止损空单，再跌又亏
-- 止盈80%止损50%：无依据，拱手送free money
-- 拆窄spread：29200/29100近0不必动，拆开变做空势头
-- 一次抄0.09delta：超出安全值+同日到期集中风险
-- roll细节错误：太近到期日/非整数strike/不等开盘流动性/非delta0(组合-0.6)
-- free roll拖成跑马：剩3天就该处理short call，拖到四巫日现金结算只能赌9:30开盘价
+- 低位杀跌割肉 / 暴涨后追涨 / 机械止盈80%止损50% / 拆窄spread / 单次抄0.09且同日到期 / roll选太近到期日或非整数strike或非delta0
 ## 七 执行与下单
-- 下单：先bid挂单稳bid-ask→modify到mid-0.25→逐格+0.25上调成交；delta不对挪一腿重试
-- bid-ask>5刀：先挂bid看报价→mid-0.25→逐格上移
-- 平仓：限价中间+0.02→每次-0.01下调成交；流动性差标的最初mid+0.3+
-- 流动性判断：atm bid-ask 2-3好/4一般/6很差；报价不精确到0.01别交易
-- 选整数strike流动性最好
-- 夜间周末流动性差别强压价格，等开盘
-- 多一天定成败：尽量同到期日
-- 分散到期日：多组末日put spread单日暴跌爆仓
-## 八 希腊字母/定价
-- sd与IV对应（atm straddle报价）
-- vega无用论（鸡生蛋，无法预测）
-- theta与gamma死对头（负gamma=朝下碗）
-- charm=d(delta)/dt，卖otm put spread负charm=隐形做空
-- V(S,t,σ) 4维曲面，P/L图是固定σ、t的2D切面
-- deep otm期权99%赚1%、1%亏10-20%，不做
-- put skew(指数)/call skew(热门股)成因
-- put-call parity是策略互换基础
-- 做市商=算法；80%正股交易来自期权盘(tail wags dog)
-- 零和真相：负期望的人在亏
-- GEX/gamma squeeze无法获取alpha；技术指标不如市场报价sd
+- 构建Delta0：先挂bid稳报价→改mid-0.25（或mid-0.50）→每2-5秒+0.25上推成交；若界面delta非0.0xx立刻退回挪strike
+- 严禁挂高credit限价单干等成交（逆向选择陷阱）：若稍后成交必因股价单边异动，成交瞬间已偏离Delta0！
+- 利用Put-Call Parity合并抵消旧腿省2条腿手续费与滑点
+- 平仓：mid+0.02起步每次-0.01下调；选整数strike；避开夜盘/周末及季结周四下午流动性枯竭期
+## 八 希腊字母/定价与微观结构
+- 期权定价路径无关性（即时性）：0dte BWB若开盘1分钟瞬间暴跌1sd，因Theta尚未衰减而负Gamma先发威，账面必先浮亏
+- Vega无用论 vs Vanna效应（事件落地IV骤降或避险Put平仓迫使做市商买回空头期货，引爆无利好逼空暴涨）
+- Theta与Gamma死对头（正theta必负gamma）；但跨现价对称价差（0.6/0.4）在中心点处为0 Gamma、0 Theta
+- IBKR盈亏图微积分本质：第1张是原函数V(S)，第2张Delta是dV/dS，第3张Gamma是d²V/dS²，导数无额外信息故只看第1张图（设未来2-4天）
+- 指数Put Skew（0.15P比0.15C远且贵50%+）vs 热门股Call Skew；Put-Call Parity是策略互换基石
+- 四巫日微观结构：早盘8:00-9:30机构将价格打向最大持仓量行权价「杀期权（Max Pain）」；驳斥加密所美股永续合约3%价差套利（Last价滞后+Bid-Ask吞噬）
 ## 九 记账
-- 两条账：credit/debit 或 realized/unrealized P/L，不可混
-- roll记账：向下roll realize profit、put归零再realize、itm short call的unrealized loss累积到向上roll时才抵消
-## 十 其他资产/现金
-- 日元：USD.JPY卖美元买日元或卖JPY裸put；干预4条件；convert换汇2刀/次、3万刀+；9/18落地：现货USD.JPY sell+JPY期货atm put(2-3周)双管齐下
-- 外汇交易：bid-ask极窄直接market order，一次3万刀内控风险
-- 长债：ZB卖otm put(108支撑)；不卖deep otm(手小IV低损耗高)
-- 现金三选项：日元等升值/SPX box spread(高0.25-0.5%，大资金)/SGOV
-- 杠杆做多：买MNQ期货替代long call
-- 2倍做多ETF本质=每日再平衡自动追涨杀跌
+- 两条账绝不可混：credit/debit现金流账 vs realized/unrealized损益账
+- 多次roll记账：向下roll与下方put归零不断realize profit，上方itm short call累积的unrealized loss直到向上roll成atm long put spread时才一次性realize抵消
+## 十 其他资产/宏观与现金
+- 日元（长线看至110）：现货USD.JPY sell + 卖JPY期货put；央行干预4条件；外汇market order单次建议3万美金以上（至少2.8万，防$3最低手续费占比过高）
+- 长债（ZB）：107/108支撑卖otm put；不卖deep otm（损耗占比高）
+- 行业与催化分析：存储芯片（MU/SNDK）周期短缺类比白银泡沫；季末基金Window Dressing粉饰报表；SK Hynix美韩跨市场砸盘传导；利用ZQF7联邦基金期货做催化动量
+- 现金三选项：持日元等升值 / SPX box spread（大资金） / SGOV；做多杠杆用期货替代long call；杠杆ETF每日再平衡=自动追涨杀跌
 ## 十一 学习/新手建议
-- 虚拟账户练手，弄懂P/L图与delta/theta/gamma关系
-- 复杂操作前预演股价/IV/极端情况，纪律执行
-- 信息源方法论：论坛/股评有利益冲突；无冲突只有①新闻②为自己交易的股评(懂期权三维度)
-- 资源① Tom Sosnoff：lossdog直播(YT @lossdog+lossdog.com，call-in 989-LOSSDOG)，周一至周四9:30-11am ET，顶流经验well rounded；文字源少(视频驱动)，X @Tomunderwater；名言「some moves are indefensible」
-- 资源② Tim Knight：tastylive Trading Charts，周一至周五3:15pm ET，刚烈赌方向强配严格止损，极度看空纳指；文字观点源 slopeofhope.com(2005至今3万+篇,每日图表+文字) + X @SlopeOfHope，perma-bear
-- 新闻源：jin10金十(价格异动1分钟内解释)
-- 开IBKR一劳永逸（QQQ损耗高8倍）
+- 先用虚拟账户或1万美金小账户练手（晓晓专设1万刀示范账户），复杂操作前须预演
+- 信息源：过滤被多头观众绑架的股评，只看①实时快讯（jin10金十）②无利益冲突且懂期权多维度的独立交易员
+- 推荐资源① Tom Sosnoff：YouTube搜lossdog，周一至周四美股开盘直播1.5小时；名言「some moves are indefensible」（7sd行情唯有靠有上限保护兜底）
+- 推荐资源② Tim Knight：YouTube搜tastylive，周一至周五下午3点直播半小时，方向性极强配严格止损，极度看空纳指
+- 开IBKR交易NQ一劳永逸（QQQ损耗高8倍）
 </script>
 </div>
 </body>
